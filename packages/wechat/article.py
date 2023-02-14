@@ -17,6 +17,11 @@ class WechatArticleModel(BaseModel):
 
 
 def parse_wechat_article(url: str) -> WechatArticleModel:
+    """
+    todo: add robust return when parsing invalid url like "ss"
+    :param url:
+    :return:
+    """
     res = session.get(url)
     logger.debug({"url": url, "res": res, "text": res.text})
 
