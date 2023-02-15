@@ -1,3 +1,12 @@
+# Hand-Future Backend
+
+## todo
+
+- [ ] nginx with build
+
+## install
+
+### dev start by step
 
 ```shell
 # ensure python3
@@ -12,4 +21,23 @@ source venv/bin/activate
 
 # install dependencies
 pip install -r requirements.txt
+
+# run
+uvicorn main:app --reload --host 0.0.0.0 --port 3001 --workers 4
+```
+
+### dev start by script
+
+```shell
+# list 
+pm2 ls
+
+# start
+pm2 start run.sh
+
+# stop
+pm2 stop run.sh
+
+# restart
+pm2 restart run.sh
 ```
