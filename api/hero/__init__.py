@@ -4,6 +4,7 @@ from typing import List, Dict
 from fastapi import APIRouter, Body
 from pydantic import BaseModel, Field
 
+from api.hero.notion import initHeroesFromNotion, parseHeroesInfo
 from db import coll_hero
 
 hero_router = APIRouter(prefix="/hero", tags=["hero"])
@@ -54,6 +55,20 @@ def update_basic(data: HeroModel):
 @hero_router.get("/list")
 def get_list() -> Dict:
     data = list(coll_hero.find({}, {"_id": False}))
+    return {
+        "size": data.__len__(),
+        "list": data
+    }
+
+
+@hero_router.get("/init")
+def get_init_list() -> Dict:
+    """
+    todo: use raw (but should query the list)
+    :return:
+    """
+    raw_data = initHeroesFromNotion()
+    data = parseHeroesInfo(raw_data)
     return {
         "size": data.__len__(),
         "list": data
