@@ -6,10 +6,10 @@ from typing import List
 from urllib.parse import quote
 
 from api.hero.ds import HeroModel
-from api.hero.settings import NOTION_COOKIE, NOTION_COL_MAP
+from config import NOTION_COOKIE, NOTION_COL_MAP
 from log import getLogger
 from packages.general.re import parse_p1
-from path import CACHED_DATA_DIR
+from path import CACHE_DATA_DIR
 from session import session
 
 logger = getLogger("notion")
@@ -66,7 +66,7 @@ def crawl_notion_heroes():
 
 
 def parse_notion_heroes_info(data) -> List[HeroModel]:
-    with open(os.path.join(CACHED_DATA_DIR, f"notin_users_{datetime.now().isoformat()}.json"), "w") as f:
+    with open(os.path.join(CACHE_DATA_DIR, f"notin_users_{datetime.now().isoformat()}.json"), "w") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     collectionId = '151215d5-10a7-494d-96cd-5bf7b2bff3b6'  # this will be used in later parse on property key map
     propertyKeyMap = data['recordMap']['collection'][collectionId]['value']['schema']

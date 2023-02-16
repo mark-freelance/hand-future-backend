@@ -33,11 +33,11 @@ uvicorn main:app --reload --host 0.0.0.0 --port 3001 --workers 4
 pm2 ls
 
 # start
-pm2 start run.sh
+pm2 start run-hand-future-backend.sh
 
 # stop
-pm2 stop run.sh
+pm2 stop run-hand-future-backend.sh
 
 # restart
-pm2 restart run.sh
+pm2 restart run-hand-future-backend.sh
 ```

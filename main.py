@@ -1,15 +1,12 @@
 import os.path
 
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI
 
 from api.files import files_router
-from api.hero import hero_router
 from api.wechat import wechat_router
-from packages.wechat.article import parse_wechat_article
+from api.user.router import user_router
+from api.hero.router import hero_router
 from fastapi.middleware.cors import CORSMiddleware
-import uuid
-
-from path import UPLOADED_DATA_DIR
 
 app = FastAPI()
 
@@ -35,6 +32,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(user_router)
 app.include_router(hero_router)
 app.include_router(wechat_router)
 app.include_router(files_router)

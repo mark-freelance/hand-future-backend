@@ -1,6 +1,6 @@
 import pymongo
 
-from api.hero import HeroModel
+from api.hero.ds import HeroModel
 
 
 def get_task_of_update_hero(data: HeroModel) -> pymongo.UpdateOne:
