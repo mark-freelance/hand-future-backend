@@ -8,7 +8,7 @@ from api.hero.notion import crawl_notion_heroes, parse_notion_heroes_info
 from api.hero.utils import get_task_of_update_hero
 from db import coll_hero
 
-hero_router = APIRouter(prefix="/hero", tags=["hero"])
+hero_router = APIRouter(prefix="/heroes", tags=["heroes"])
 
 
 @hero_router.post("/update_basic")
@@ -36,3 +36,8 @@ def get_init_list() -> Dict:
     tasks = list(map(get_task_of_update_hero, data))
     result = coll_hero.bulk_write(tasks, ordered=False)
     return result.bulk_api_result
+
+@hero_router.put('/reset')
+def reset():
+    result = coll_hero.delete_many({})
+    return result.raw_result

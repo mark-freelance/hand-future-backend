@@ -16,7 +16,14 @@ logger = getLogger("notion")
 
 
 def get_notion_avatar_url(user_id: str, avatar_uri: str) -> str:
-    return 'https://gkleifeng.notion.site/image/' + quote(avatar_uri) + \
+    """
+    quote(s: str) 不会转义 /，结合 safe 参数可以，ref: https://www.urlencoder.io/python/
+
+    :param user_id:
+    :param avatar_uri:
+    :return:
+    """
+    return 'https://gkleifeng.notion.site/image/' + quote(avatar_uri, safe='') + \
         f'?table=block&id={user_id}&spaceId=5a775ac8-377b-4c22-918d-36dd67f5e3a2&width=600&userId=&cache=v2'
 
 
