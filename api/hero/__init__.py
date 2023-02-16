@@ -1,60 +1,24 @@
-from enum import Enum
-from typing import List, Dict
+from typing import Dict
 
-from fastapi import APIRouter, Body
-from pydantic import BaseModel, Field
+import pymongo
+from fastapi import APIRouter
 
-from api.hero.notion import initHeroesFromNotion, parseHeroesInfo
+from api.hero.ds import HeroModel
+from api.hero.notion import crawl_notion_heroes, parse_notion_heroes_info
+from api.hero.utils import get_task_of_update_hero
 from db import coll_hero
 
 hero_router = APIRouter(prefix="/hero", tags=["hero"])
 
 
-class Sex(str, Enum):
-    MALE = "MALE"
-    FEMALE = "FEMALE"
-
-
-class HeroModel(BaseModel):
-    id: str
-    name: str
-    sex: Sex
-    title: str
-    desc: str
-    avatar: str
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "id": "suyang@gkleifeng.com",
-                "name": '苏阳',
-                "sex": Sex.MALE,
-                "avatar": '/Users/mark/Projects/HandFuture/website/2.12 分享卡片设计文件夹(_F)/Links/苏阳_avatar.jpg',
-                "title": '杰出的民族摇滚音乐家、当代艺术家',
-                "desc": '他将“花儿”、“秦腔”等西北民间音乐及传统曲艺形式，与流行音乐进行嫁接、改良和解构，经由西方现代音乐的理论和手法，创造出一种全新的音乐语言。',
-            }
-        }
-
-
 @hero_router.post("/update_basic")
 def update_basic(data: HeroModel):
-    result = coll_hero.update_one(
-        {"id": data.id},
-        {"$set": {
-            "name": data.name,
-            "sex": data.sex,
-            "title": data.title,
-            "desc": data.desc,
-            "avatar": data.avatar
-        }},
-        upsert=True
-    )
-    return result.raw_result
+    return coll_hero.bulk_write(get_task_of_update_hero(data))
 
 
 @hero_router.get("/list")
 def get_list() -> Dict:
-    data = list(coll_hero.find({}, {"_id": False}))
+    data = list(coll_hero.find({}, {}))
     return {
         "size": data.__len__(),
         "list": data
@@ -67,9 +31,8 @@ def get_init_list() -> Dict:
     todo: use raw (but should query the list)
     :return:
     """
-    raw_data = initHeroesFromNotion()
-    data = parseHeroesInfo(raw_data)
-    return {
-        "size": data.__len__(),
-        "list": data
-    }
+    raw_data = crawl_notion_heroes()
+    data = parse_notion_heroes_info(raw_data)
+    tasks = list(map(get_task_of_update_hero, data))
+    result = coll_hero.bulk_write(tasks, ordered=False)
+    return result.bulk_api_result

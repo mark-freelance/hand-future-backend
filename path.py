@@ -12,3 +12,4 @@ def ensure_dir_exist(dir_path: str):
 LOGS_DIR = ensure_dir_exist(os.path.join(PROJECT_DIR, "logs"))
 DATA_DIR = ensure_dir_exist(os.path.join(PROJECT_DIR, "data"))
 UPLOADED_DATA_DIR = ensure_dir_exist(os.path.join(DATA_DIR, "uploaded"))
+CACHED_DATA_DIR = ensure_dir_exist(os.path.join(DATA_DIR, "cached"))

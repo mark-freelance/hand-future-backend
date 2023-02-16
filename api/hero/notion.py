@@ -1,16 +1,26 @@
+import json
+import os.path
+from datetime import datetime
 from pprint import pprint
-from typing import List, TypedDict
+from typing import List
+from urllib.parse import quote
 
-from pydantic import BaseModel
-
+from api.hero.ds import HeroModel
+from api.hero.settings import NOTION_COOKIE, NOTION_COL_MAP
 from log import getLogger
 from packages.general.re import parse_p1
+from path import CACHED_DATA_DIR
 from session import session
 
 logger = getLogger("notion")
 
 
-def initHeroesFromNotion():
+def get_notion_avatar_url(user_id: str, avatar_uri: str) -> str:
+    return 'https://gkleifeng.notion.site/image/' + quote(avatar_uri) + \
+        f'?table=block&id={user_id}&spaceId=5a775ac8-377b-4c22-918d-36dd67f5e3a2&width=600&userId=&cache=v2'
+
+
+def crawl_notion_heroes():
     data = {
         'source': {
             'type': 'collection',
@@ -43,46 +53,42 @@ def initHeroesFromNotion():
     res = session.post(
         'https://gkleifeng.notion.site/api/v3/queryCollection?src=reset',
         json=data,
-        headers={
-            'Cookie':
-                'notion_browser_id=ee0024cf-69ba-452f-8b2e-aee3ac87fc25; intercom-id-gpfdrxfd=d072f01b-ec07-4e0a-8790-8c5735d46497; intercom-device-id-gpfdrxfd=54b4c53d-f4de-4ec2-a9f9-aca5640eabc4; intercom-session-gpfdrxfd=; notion_check_cookie_consent=false; __cf_bm=mXmsTZyOCNbeA5vtjpbTt6AzwXRCutaWn4l2POVinmA-1676470443-0-Ac4TUhTOuPhmaSFYtoevUDjRbBbxI0HccHqmCAKpnrYffK2TY/OBLY6uqLa+A6s3KAFGrGkVAt37WQPgoZXkQfY=; amp_af43d4=ee0024cf69ba452f8b2eaee3ac87fc25...1gpabddt6.1gpamrb1l.ji.8.jq',
-        },
+        headers={'Cookie': NOTION_COOKIE},
     )
     return res.json()
 
 
-class UserBasicModel(TypedDict):
-    user_id: str
-    name: str
-    avatar: str
-    title: str
-
-
-def parseHeroesInfo(data) -> List[UserBasicModel]:
-    # logger.info(data)
+def parse_notion_heroes_info(data) -> List[HeroModel]:
+    with open(os.path.join(CACHED_DATA_DIR, f"notin_users_{datetime.now().isoformat()}.json"), "w") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
     collectionId = '151215d5-10a7-494d-96cd-5bf7b2bff3b6'  # this will be used in later parse on property key map
     propertyKeyMap = data['recordMap']['collection'][collectionId]['value']['schema']
     # pprint(propertyKeyMap)
 
     items = []
     for user_id, user_data in data['recordMap']['block'].items():
-        pprint({"user_id": user_id, "user_data": user_data})
         if 'properties' not in user_data['value']: continue
         item = {}
         for key, vals in user_data['value']['properties'].items():
             if key in propertyKeyMap:
                 item[propertyKeyMap[key]['name']] = vals  # 编码列 --> 可读列
 
-        targetItem = {}
-        targetItem['user_id'] = user_id
-        targetItem['name'] = parse_p1(r'([\u4e00-\u9fa5]+)', str(item.get('嘉宾姓名', ''))) or ""
-        targetItem['avatar'] = parse_p1(r"(http.*?)'", str(item.get('照片', ''))) or ''
-        targetItem['title'] = parse_p1(r'([\u4e00-\u9fa5]+)', str(item.get("title", ''))) or ''
-        if targetItem['name'] and targetItem['avatar'] and targetItem['title']:
-            items.append(targetItem)
+        logger.info(item)
+        target_item = {
+            "id": user_id,
+            "name": parse_p1(r'([\u4e00-\u9fa5]+)', str(item.get(NOTION_COL_MAP["name"], ''))),
+            "avatar": get_notion_avatar_url(user_id, parse_p1(r"(http.*?)'", str(item.get(NOTION_COL_MAP["avatar"], '')))),
+            "title": parse_p1(r'([\u4e00-\u9fa5]+)', str(item.get(NOTION_COL_MAP["title"], ''))),
+            "cities": parse_p1(r'([\u4e00-\u9fa5]+)', str(item.get(NOTION_COL_MAP["cities"], '')))
+        }
+        if target_item['name'] and target_item['avatar'] and target_item['title']:
+            # logger.info(target_item)
+            items.append(HeroModel(**target_item))
+        else:
+            logger.warning(target_item)
     return items
 
 
 if __name__ == '__main__':
-    data = parseHeroesInfo(initHeroesFromNotion())
+    data = parse_notion_heroes_info(crawl_notion_heroes())
     pprint(data)
