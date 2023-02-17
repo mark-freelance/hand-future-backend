@@ -50,7 +50,7 @@ async def register(
 
 
 @user_router.put('/activate', response_model=UserInDB)
-async def activate(username: str, code: str):
+async def activate(username: str = Form(...), code: str = Form(...)):
     user = coll_user.find_one({"username": username, "activated": False})
     # user 被抢先注册！
     if not user:

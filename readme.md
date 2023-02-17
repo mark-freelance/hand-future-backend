@@ -42,6 +42,10 @@ pm2 stop run-hand-future-backend.sh
 pm2 restart run-hand-future-backend.sh
 ```
 
+## tips
+
+### 国内的服务器使用 smtp 服务时不要用 google 的，否则会连不上，用 qq 的就可以；本地可以翻的话倒无所谓
+
 ## bugfix
 
 ### solved: `AttributeError: module 'lib' has no attribute 'OpenSSL_add_all_algorithms'`
