@@ -6,10 +6,10 @@ from datetime import timedelta
 
 from fastapi import Depends, HTTPException, status, APIRouter, Form
 from fastapi.security import OAuth2PasswordRequestForm
-from api.user.utils import get_password_hash, authenticate_user, create_access_token, get_current_user
+from api.user.utils import get_password_hash, authenticate_user, create_access_token, get_authed_user
 
 from config import SECURITY_ACCESS_TOKEN_EXPIRE_MINUTES
-from api.user.ds import Token, User, UserInDB
+from api.user.ds import Token, User, UserInDB, UserProfile
 from db import coll_user
 
 from packages.general.rand import gen_random_activation_code
@@ -86,6 +86,26 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@user_router.get("/me/", response_model=User)
-async def read_users_me(current_user: User = Depends(get_current_user)):
-    return current_user
+@user_router.get("/me", response_model=User)
+async def read_user(user: User = Depends(get_authed_user)):
+    return user
+
+
+@user_router.post('/update')
+async def update_user(data: UserProfile, user: User = Depends(get_authed_user)):
+    """
+    更新时不可修改 username、password、email
+    其他的可以更改
+
+    :param data:
+    :param user:
+    :return:
+    """
+    result = coll_user.update_one(
+        {"username": user.username},
+        {"$set": {
+            "avatar": data.avatar,
+            "nickname": data.nickname
+        }
+        })
+    return result.raw_result

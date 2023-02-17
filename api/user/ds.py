@@ -22,3 +22,7 @@ class UserInDB(User):
     hashed_password: str
     disabled: Union[bool, None] = None
     activation_code: str
+
+
+class UserProfile(User):
+    avatar: str
