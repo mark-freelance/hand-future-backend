@@ -1,9 +1,17 @@
-# mail
-MAIL_SENDER_ADDRESS = "shawninjuly@gmail.com"
+# -- mail
+# gmail
 MAIL_SENDER_NAME = "南川"
-MAIL_APP_PASSWORD = "zjwigxgruzvgmfaw"  # google 应用专用密码！, ref: https://myaccount.google.com/apppasswords?pli=1&rapt=AEjHL4OCKSPTpmzjxIQv7oe8s6mbw7OdIUuDZJzV1Cl7cnfoXMLPp_8vb8eFOFu_fCH0qRntGfaH7Sl351UoHMEIchb5GpteLg
-MAIL_SMTP_SERVER = 'smtp.gmail.com'
 MAIL_SMTP_PORT = 465
+
+MAIL_SMTP_SERVER = 'smtp.gmail.com'
+MAIL_SENDER_ADDRESS = "shawninjuly@gmail.com"
+MAIL_APP_PASSWORD = "zjwigxgruzvgmfaw"  # google 应用专用密码！, ref: https://myaccount.google.com/apppasswords?pli=1&rapt=AEjHL4OCKSPTpmzjxIQv7oe8s6mbw7OdIUuDZJzV1Cl7cnfoXMLPp_8vb8eFOFu_fCH0qRntGfaH7Sl351UoHMEIchb5GpteLg
+
+# qq
+MAIL_SMTP_SERVER = 'smtp.qq.com'
+MAIL_SENDER_ADDRESS = '877210964@qq.com'
+MAIL_APP_PASSWORD = 'dkbjelmixoubbecj'
+
 
 # auth
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"  # openssl rand -hex 32

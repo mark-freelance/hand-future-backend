@@ -23,7 +23,7 @@ class MyMail:
         self._password = MAIL_APP_PASSWORD
         self._smtp_server = MAIL_SMTP_SERVER
         self._smtp_port = MAIL_SMTP_PORT
-        logger.info(f"connection SMTP server at: {self._smtp_server}:{self._smtp_port}...")
+        logger.info(f"connecting SMTP server at: {self._smtp_server}:{self._smtp_port}...")
         self._server = smtplib.SMTP_SSL(self._smtp_server, self._smtp_port)
         logger.info("connected!")
         logger.info("login...")

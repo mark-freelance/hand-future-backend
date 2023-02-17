@@ -9,11 +9,11 @@ from fastapi.security import OAuth2PasswordRequestForm
 from api.user.utils import get_password_hash, authenticate_user, create_access_token, get_current_user
 
 from config import SECURITY_ACCESS_TOKEN_EXPIRE_MINUTES
-from api.user.ds import Token, TokenData, User, UserInDB
+from api.user.ds import Token, User, UserInDB
 from db import coll_user
 
 from packages.general.rand import gen_random_activation_code
-from packages.mail.demo2_send_html import MyMail
+from packages.general.mail import MyMail
 
 user_router = APIRouter(prefix="/user", tags=["user"])
 
