@@ -23,12 +23,6 @@ class MyMail:
         self._password = MAIL_APP_PASSWORD
         self._smtp_server = MAIL_SMTP_SERVER
         self._smtp_port = MAIL_SMTP_PORT
-        logger.info(f"connecting SMTP server at: {self._smtp_server}:{self._smtp_port}...")
-        self._server = smtplib.SMTP_SSL(self._smtp_server, self._smtp_port)
-        logger.info("connected!")
-        logger.info("login...")
-        self._server.login(self._username, self._password)
-        logger.info("logged in!")
 
     def _send_html_mail(self, subject, content, recipients, kind: str):
         sender = self._sender_name  # 会在收到邮件时显示名字（因此可以不必用地址）
@@ -38,10 +32,15 @@ class MyMail:
         msg['From'] = sender
         msg['To'] = recipients if isinstance(recipients, str) else ', '.join(recipients)
 
+        logger.info(f"connecting SMTP server at: {self._smtp_server}:{self._smtp_port}...")
+        server = smtplib.SMTP_SSL(self._smtp_server, self._smtp_port)
+        logger.info("login...")
+        server.login(self._username, self._password)
         # from_addr 只能用ascii字符
         # UnicodeEncodeError: 'ascii' codec can't encode characters in position 11-12: ordinal not in range(128)
-        self._server.sendmail(self._username, recipients, msg.as_string())
-        logger.info("sent mail")
+        server.sendmail(self._username, recipients, msg.as_string())
+        logger.info("successfully sent mail!")
+        server.close()
 
     def send_hand_future_activation_mail(self, recipients: List[str], activation_code: str, kind: str = "html"):
         if kind == "html":
@@ -52,9 +51,6 @@ class MyMail:
             content = activation_code
         logger.info(f'sending content: {content}')
         self._send_html_mail("【携手未来】激活验证码", content, recipients, kind)
-
-    def __del__(self):
-        self._server.close()
 
 
 if __name__ == '__main__':

@@ -9,8 +9,9 @@ from fastapi.security import OAuth2PasswordRequestForm
 from api.user.utils import get_password_hash, authenticate_user, create_access_token, get_authed_user
 
 from config import SECURITY_ACCESS_TOKEN_EXPIRE_MINUTES
-from api.user.ds import Token, User, UserInDB, UserProfile
+from api.user.ds import User, UserInDB, UserProfile
 from db import coll_user
+from log import getLogger
 
 from packages.general.rand import gen_random_activation_code
 from packages.general.mail import MyMail
@@ -18,6 +19,7 @@ from packages.general.mail import MyMail
 user_router = APIRouter(prefix="/user", tags=["user"])
 
 my_mail = MyMail()
+logger = getLogger("Auth")
 
 
 @user_router.post('/register')
@@ -70,7 +72,7 @@ async def activate(username: str = Form(...), code: str = Form(...)):
     return user
 
 
-@user_router.post("/token", response_model=Token)
+@user_router.post("/token", description='要返回token字段，其他api要用')
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     user = authenticate_user(form_data.username, form_data.password)
     if not user:
@@ -83,10 +85,11 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
+    logger.info({"access_token": access_token})
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@user_router.get("/me", response_model=User)
+@user_router.get("/me", response_model=UserProfile)
 async def read_user(user: User = Depends(get_authed_user)):
     return user
 
