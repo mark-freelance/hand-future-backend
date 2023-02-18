@@ -7,6 +7,8 @@ from fastapi import UploadFile, Path, HTTPException
 from fastapi.routing import APIRouter
 from starlette.responses import FileResponse
 
+from api.ds import BaseResSuccessModel, STATUS_OK, ListResModel
+from config import URI
 from path import UPLOADED_DATA_DIR
 
 files_router = APIRouter(prefix="/files", tags=["files"])
@@ -26,7 +28,7 @@ def get_uploaded_file_path_from_id(file_id: str):
     return os.path.join(UPLOADED_DATA_DIR, file_id)
 
 
-@files_router.post("/upload")
+@files_router.post("/upload", response_model=BaseResSuccessModel[str])
 async def upload(file: UploadFile):
     """
     todo: support duplication detect using Redis/Cache
@@ -38,19 +40,20 @@ async def upload(file: UploadFile):
     with open(file_path, "wb") as f:
         f.write(file.file.read())
     return {
-        "id": file_id,
-        "name": file.filename,
-        "path": file_path,
-        "size": file.size,
+        "status": STATUS_OK,
+        "data": f'{URI}/files/{file_id}'
     }
 
 
-@files_router.get("/list")
+@files_router.get("/list", response_model=ListResModel[str])
 async def get_list():
     files_list = get_uploaded_file_list()
     return {
-        "size": files_list.__len__(),
-        "list": files_list
+        "status": STATUS_OK,
+        "data": {
+            "size": files_list.__len__(),
+            "data": files_list
+        }
     }
 
 

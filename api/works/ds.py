@@ -12,6 +12,7 @@ class WorkType(str, Enum):
 
 
 class Work(BaseModel):
+    title: str
     type: WorkType
     content: str
 

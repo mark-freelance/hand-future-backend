@@ -1,5 +1,5 @@
-import os.path
 
+import uvicorn
 from fastapi import FastAPI
 
 from api.files import files_router
@@ -9,6 +9,7 @@ from api.hero.router import hero_router
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.works.router import works_router
+from config import HOST, PORT, IS_DEV
 
 app = FastAPI()
 
@@ -44,3 +45,7 @@ app.include_router(files_router)
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+
+if __name__ == '__main__':
+    uvicorn.run(app, host=HOST, port=PORT, reload=IS_DEV)

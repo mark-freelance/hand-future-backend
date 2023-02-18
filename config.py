@@ -1,3 +1,15 @@
+# -- server
+ENV = 0
+PORT = 3001
+IS_DEV = ENV == 0
+if ENV == 0:
+    PROTOCOL = "http"
+    HOST = 'localhost'
+else:
+    PROTOCOL = "https"
+    HOST = 'gkleifeng.com'
+URI = f"{PROTOCOL}://{HOST}:{PORT}"
+
 # -- database
 MONGO_URI = "mongodb://admin:admin@82.157.185.34:2099"
 
