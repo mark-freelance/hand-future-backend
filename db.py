@@ -11,3 +11,4 @@ db_client = pymongo.MongoClient(MONGO_URI)
 db = db_client["hand_future"]
 coll_hero = db["hero"]
 coll_user = db["user"]
+coll_work = db['work']
