@@ -38,20 +38,28 @@ async def register(
     code = gen_random_activation_code()
     my_mail.send_hand_future_activation_mail([email], code, "html")
 
-    user = {
+    user_data = {
         "username": username,
         "hashed_password": get_password_hash(password),
         "nickname": nickname,
         "email": email,
-        "register_time": time.time(),
+        "avatar": '',
+        "social": {
+            "following": 0,
+            "followed": 0,
+            "likes": 0
+        },
+        "activated": False,
         "activation_code": code,
-        "activated": False
+        "register_time": time.time(),
     }
-    coll_user.update_one({"username": username}, {"$set": user}, upsert=True)
+    # validate user_data
+    UserInDB(**user_data)
+    coll_user.update_one({"username": username}, {"$set": user_data}, upsert=True)
     return True
 
 
-@user_router.put('/activate', response_model=UserInDB)
+@user_router.put('/activate')
 async def activate(username: str = Form(...), code: str = Form(...)):
     user = coll_user.find_one({"username": username, "activated": False})
     # user 被抢先注册！
@@ -65,11 +73,15 @@ async def activate(username: str = Form(...), code: str = Form(...)):
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
             detail="Invalid / Incorrect Activation Code !"
         )
-    coll_user.update_one({"username": user["username"]}, {"$set": {
-        "activated": True,
-        "activation_time": time.time()
-    }})
-    return user
+    coll_user.update_one(
+        {"username": user["username"]},
+        {"$set": {
+            "activated": True,
+            "activation_time": time.time()
+        }},
+        return_document=True
+    )
+    return True
 
 
 @user_router.post("/token", description='要返回token字段，其他api要用')

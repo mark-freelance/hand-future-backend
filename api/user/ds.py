@@ -13,11 +13,19 @@ class User(BaseModel):
     nickname: Union[str, None] = None
 
 
-class UserInDB(User):
-    hashed_password: str
-    disabled: Union[bool, None] = None
-    activation_code: str
+class UserSocial(BaseModel):
+    following: int = 0
+    followed: int = 0
+    likes: int = 0
 
 
 class UserProfile(User):
     avatar: str = ''
+    social: UserSocial
+
+
+class UserInDB(UserProfile):
+    hashed_password: str
+    activated: bool
+    activation_code: str
+    register_time: float
