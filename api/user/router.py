@@ -4,8 +4,12 @@ ref: https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/
 import time
 from datetime import timedelta
 
-from fastapi import Depends, HTTPException, status, APIRouter, Form
+from fastapi import Depends, HTTPException, status, APIRouter, Form, UploadFile, Body
+from fastapi.encoders import jsonable_encoder
 from fastapi.security import OAuth2PasswordRequestForm
+from pydantic import BaseModel
+
+from api.ds import BaseResSuccessModel, STATUS_OK
 from api.user.utils import get_password_hash, authenticate_user, create_access_token, get_authed_user
 
 from config import SECURITY_ACCESS_TOKEN_EXPIRE_MINUTES
@@ -39,6 +43,7 @@ async def register(
     my_mail.send_hand_future_activation_mail([email], code, "html")
 
     user_data = {
+        "_id": username,
         "username": username,
         "hashed_password": get_password_hash(password),
         "nickname": nickname,
@@ -59,7 +64,7 @@ async def register(
     return True
 
 
-@user_router.put('/activate')
+@user_router.post('/activate')
 async def activate(username: str = Form(...), code: str = Form(...)):
     user = coll_user.find_one({"username": username, "activated": False})
     # user 被抢先注册！
@@ -74,12 +79,11 @@ async def activate(username: str = Form(...), code: str = Form(...)):
             detail="Invalid / Incorrect Activation Code !"
         )
     coll_user.update_one(
-        {"username": user["username"]},
+        {"_id": user["username"]},
         {"$set": {
             "activated": True,
             "activation_time": time.time()
         }},
-        return_document=True
     )
     return True
 
@@ -106,21 +110,25 @@ async def read_user(user: User = Depends(get_authed_user)):
     return user
 
 
-@user_router.post('/update')
+@user_router.patch('/update', response_model=BaseResSuccessModel[UserProfile])
 async def update_user(data: UserProfile, user: User = Depends(get_authed_user)):
     """
-    更新时不可修改 username、password、email
-    其他的可以更改
+    理论上不可修改 username、password、email，其他的可以更改
+    todo: do more restriction
 
     :param data:
     :param user:
     :return:
     """
-    result = coll_user.update_one(
-        {"username": user.username},
-        {"$set": {
-            "avatar": data.avatar,
-            "nickname": data.nickname
-        }
-        })
-    return result.raw_result
+    partial_data = data.dict(exclude_unset=True)
+    logger.info({"/user/update": {"data": data, "partial_data": partial_data}})
+    data = coll_user.find_one_and_update(
+        {"_id": user.username},
+        # partial update, ref: https://fastapi.tiangolo.com/tutorial/body-updates/
+        {"$set": partial_data},
+        return_document=True
+    )
+    return {
+        "status": STATUS_OK,
+        "data": data
+    }

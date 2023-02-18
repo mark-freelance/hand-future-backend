@@ -1,16 +1,16 @@
-from typing import Union
+from typing import Union, Optional
 
 from pydantic import BaseModel
 
 
 class TokenData(BaseModel):
-    username: Union[str, None] = None
+    username: str = None
 
 
 class User(BaseModel):
-    username: str
-    email: Union[str, None] = None
-    nickname: Union[str, None] = None
+    username: str = None
+    email: str = None
+    nickname: str = None
 
 
 class UserSocial(BaseModel):
@@ -21,7 +21,7 @@ class UserSocial(BaseModel):
 
 class UserProfile(User):
     avatar: str = ''
-    social: UserSocial
+    social: Optional[UserSocial]
 
 
 class UserInDB(UserProfile):

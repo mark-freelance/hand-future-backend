@@ -31,7 +31,7 @@ def get_password_hash(password):
 
 
 def get_user(username: str):
-    user = coll_user.find_one({"username": username})
+    user = coll_user.find_one({"_id": username})
     if user:
         return UserInDB(**user)
 
