@@ -2,12 +2,11 @@
 ENV = 0
 PORT = 3001
 IS_DEV = ENV == 0
+HOST = 'gkleifeng.com'
 if ENV == 0:
     PROTOCOL = "http"
-    HOST = 'localhost'
 else:
     PROTOCOL = "https"
-    HOST = 'gkleifeng.com'
 URI = f"{PROTOCOL}://{HOST}:{PORT}"
 
 # -- database
