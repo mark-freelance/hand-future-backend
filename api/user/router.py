@@ -31,7 +31,8 @@ async def register(
         username: str = Form(...),
         password: str = Form(...),
         nickname: str = Form(...),
-        email: str = Form(...)
+        email: str = Form(...),
+        avatar: str = Form(...)
 ):
     if coll_user.find_one({"username": username, "activated": True}):
         raise HTTPException(
@@ -48,7 +49,7 @@ async def register(
         "hashed_password": get_password_hash(password),
         "nickname": nickname,
         "email": email,
-        "avatar": '',
+        "avatar": avatar,
         "social": {
             "following": 0,
             "followed": 0,

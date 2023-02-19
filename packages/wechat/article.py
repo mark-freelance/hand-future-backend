@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from log import getLogger
 from packages.general.re import parse_p1
-from session import session
+from packages.general.session import session
 
 logger = getLogger("WechatArticle")
 

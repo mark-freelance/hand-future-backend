@@ -5,12 +5,12 @@ from pprint import pprint
 from typing import List
 from urllib.parse import quote
 
-from api.hero.ds import HeroModel
+from api.hero.ds import HeroModel, NotionHeroModel
 from config import NOTION_COOKIE, NOTION_COL_MAP
 from log import getLogger
 from packages.general.re import parse_p1
 from path import CACHE_DATA_DIR
-from session import session
+from packages.general.session import session
 
 logger = getLogger("notion")
 
@@ -65,34 +65,40 @@ def crawl_notion_heroes():
     return res.json()
 
 
-def parse_notion_heroes_info(data) -> List[HeroModel]:
-    with open(os.path.join(CACHE_DATA_DIR, f"notin_users_{datetime.now().isoformat()}.json"), "w") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    collectionId = '151215d5-10a7-494d-96cd-5bf7b2bff3b6'  # this will be used in later parse on property key map
-    propertyKeyMap = data['recordMap']['collection'][collectionId]['value']['schema']
-    # pprint(propertyKeyMap)
+def parse_notion_heroes_info(data) -> List[NotionHeroModel]:
+    coll_id = '151215d5-10a7-494d-96cd-5bf7b2bff3b6'  # this will be used in later parse on property key map
+    property_key_map = data['recordMap']['collection'][coll_id]['value']['schema']
 
-    items = []
-    for user_id, user_data in data['recordMap']['block'].items():
+    raw_items = data['recordMap']['block'].items()
+    items: List[NotionHeroModel] = []
+    for user_id, user_data in raw_items:
+
+        # 这些应该是空行！
+        # self.assertIn('properties', user_data['value'])
         if 'properties' not in user_data['value']: continue
+
         item = {}
         for key, vals in user_data['value']['properties'].items():
-            if key in propertyKeyMap:
-                item[propertyKeyMap[key]['name']] = vals  # 编码列 --> 可读列
+            if key in property_key_map:
+                item[property_key_map[key]['name']] = vals  # 编码列 --> 可读列
 
-        logger.info(item)
-        target_item = {
-            "id": user_id,
-            "name": parse_p1(r'([\u4e00-\u9fa5]+)', str(item.get(NOTION_COL_MAP["name"], ''))),
-            "avatar": get_notion_avatar_url(user_id, parse_p1(r"(http.*?)'", str(item.get(NOTION_COL_MAP["avatar"], '')))),
-            "title": parse_p1(r'([\u4e00-\u9fa5]+)', str(item.get(NOTION_COL_MAP["title"], ''))),
-            "cities": parse_p1(r'([\u4e00-\u9fa5]+)', str(item.get(NOTION_COL_MAP["cities"], '')))
-        }
-        if target_item['name'] and target_item['avatar'] and target_item['title']:
-            # logger.info(target_item)
-            items.append(HeroModel(**target_item))
-        else:
-            logger.warning(target_item)
+        try:
+            notion_hero_model = NotionHeroModel(
+                avatar='',
+                id=user_id,
+                name=parse_p1(r'([\u4e00-\u9fa5]+)', item[NOTION_COL_MAP["name"]]),
+                avatar_notion=get_notion_avatar_url(
+                    user_id,
+                    parse_p1(r"(http.*?)'", item[NOTION_COL_MAP["avatar"]])
+                ),
+                title=parse_p1(r'([\u4e00-\u9fa5]+)', item.get(NOTION_COL_MAP["title"])),
+                cities=parse_p1(r'([\u4e00-\u9fa5]+)', item.get(NOTION_COL_MAP["cities"]))
+            )
+            items.append(notion_hero_model)
+        except Exception as e:
+            # pprint(item)
+            pass
+    print({"stat": {"raw_times": len(raw_items), "parsed": len(items)}})
     return items
 
 

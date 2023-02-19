@@ -3,12 +3,15 @@ import uuid
 from dataclasses import Field
 from typing import Union
 
-from fastapi import UploadFile, Path, HTTPException
+import requests
+from fastapi import UploadFile, Path, HTTPException, Depends
 from fastapi.routing import APIRouter
 from starlette.responses import FileResponse
 
 from api.ds import BaseResSuccessModel, STATUS_OK, ListResModel
-from config import URI
+from api.hero.ds import HeroModel
+from config import BACKEND_ENDPOINT
+from db import coll_user, coll_hero
 from path import UPLOADED_DATA_DIR
 
 files_router = APIRouter(prefix="/files", tags=["files"])
@@ -28,6 +31,14 @@ def get_uploaded_file_path_from_id(file_id: str):
     return os.path.join(UPLOADED_DATA_DIR, file_id)
 
 
+def write_file(filename, filedata):
+    file_id = f'{uuid.uuid1()}_{filename}'
+    file_path = os.path.join(UPLOADED_DATA_DIR, file_id)
+    with open(file_path, "wb") as f:
+        f.write(filedata)
+    return f'{BACKEND_ENDPOINT}/files/{file_id}'
+
+
 @files_router.post("/upload", response_model=BaseResSuccessModel[str])
 async def upload(file: UploadFile):
     """
@@ -35,13 +46,9 @@ async def upload(file: UploadFile):
     :param file:
     :return:
     """
-    file_id = f'{uuid.uuid1()}_{file.filename}'
-    file_path = os.path.join(UPLOADED_DATA_DIR, file_id)
-    with open(file_path, "wb") as f:
-        f.write(file.file.read())
     return {
         "status": STATUS_OK,
-        "data": f'{URI}/files/{file_id}'
+        "data": write_file(file.filename, file.file.read())
     }
 
 
@@ -65,3 +72,25 @@ async def get_file(file_id: str = Path(
     if os.path.exists(file_path):
         return FileResponse(file_path)
     raise HTTPException(status_code=404, detail=f"not found file of id={file_id}")
+
+
+@files_router.get('/external/check', response_model=ListResModel[HeroModel])
+async def check_external():
+    items = list(coll_hero.find({"avatar": {"$regex": "notion"}}))
+    return {
+        "status": STATUS_OK,
+        "data": {
+            "size": len(items),
+            "data": items
+        }
+    }
+
+
+@files_router.post('/external/handle', response_model=ListResModel[HeroModel])
+async def handle_external(res=Depends(check_external)):
+    data = res["data"]["data"]
+    data_new = []
+    for item in data:
+        # todo: 实现一个UploadFile
+        res = requests.get(item['avatar'])
+        return write_file(f'{item["name"]}.png', res.content)
