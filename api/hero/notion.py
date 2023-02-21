@@ -98,7 +98,7 @@ def parse_notion_heroes_info(data) -> List[NotionHeroModel]:
         except Exception as e:
             # pprint(item)
             pass
-    print({"stat": {"raw_times": len(raw_items), "parsed": len(items)}})
+    logger.info({"stat": {"raw_times": len(raw_items), "parsed": len(items)}})
     return items
 
 

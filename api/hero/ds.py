@@ -5,8 +5,8 @@ class HeroModel(BaseModel):
     id: str
     name: str
     avatar: str
-    title: str
-    cities: str
+    title: str = None
+    cities: str = None
 
     # class Config:
     #     schema_extra = {

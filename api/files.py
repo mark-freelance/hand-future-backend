@@ -1,20 +1,25 @@
 import os
 import uuid
-from dataclasses import Field
+from copy import copy
 from typing import Union
+from urllib.parse import quote
 
 import requests
-from fastapi import UploadFile, Path, HTTPException, Depends
+from PIL import Image
+from fastapi import UploadFile, Path, HTTPException, Depends, Query
 from fastapi.routing import APIRouter
 from starlette.responses import FileResponse
 
 from api.ds import BaseResSuccessModel, STATUS_OK, ListResModel
 from api.hero.ds import HeroModel
 from config import BACKEND_ENDPOINT
-from db import coll_user, coll_hero
-from path import UPLOADED_DATA_DIR
+from log import getLogger
+from packages.general.db import coll_hero
+from path import UPLOADED_DATA_DIR, UPLOADED_THUMB_DATA_DIR
 
 files_router = APIRouter(prefix="/files", tags=["files"])
+
+logger = getLogger("API_Files")
 
 
 def get_uploaded_file_list():
@@ -27,19 +32,40 @@ def get_uploaded_first_file() -> Union[str, None]:
     return None
 
 
-def get_uploaded_file_path_from_id(file_id: str):
-    return os.path.join(UPLOADED_DATA_DIR, file_id)
+def get_uploaded_file_path_from_id(file_id: str, raw=False):
+    return os.path.join(UPLOADED_DATA_DIR if raw else UPLOADED_THUMB_DATA_DIR, file_id)
 
 
-def write_file(filename, filedata):
-    file_id = f'{uuid.uuid1()}_{filename}'
-    file_path = os.path.join(UPLOADED_DATA_DIR, file_id)
-    with open(file_path, "wb") as f:
+def write_image(filename, filedata) -> str:
+    # todo: 不确定能不能用中文名， htmltoimage 相关
+    # file_id = f'{uuid.uuid1()}_{filename}'
+    # 要有后缀，否则 Image 不知道怎么读
+    file_id = uuid.uuid1().__str__() + ".png"
+
+    # dump raw
+    logger.info(f'writing raw image of id={file_id}')
+    raw_img_path = os.path.join(UPLOADED_DATA_DIR, file_id)
+    with open(raw_img_path, "wb") as f:
         f.write(filedata)
-    return f'{BACKEND_ENDPOINT}/files/{file_id}'
+
+    # dump thumb
+    logger.info(f'writing thumb image of id={file_id}')
+    img = Image.open(raw_img_path)
+    w, h = img.size
+    MAX_W = 360
+    # todo: avoid write if w <= MAX_W, but how do we change the api ?
+    h = int(h / w * MAX_W)
+    w = MAX_W
+    img.resize((w, h)).save(
+        os.path.join(UPLOADED_THUMB_DATA_DIR, file_id)
+    )
+    return BACKEND_ENDPOINT + "/files/" + file_id
 
 
-@files_router.post("/upload", response_model=BaseResSuccessModel[str])
+@files_router.post("/upload",
+                   description='返回上传后的id',
+                   response_model=BaseResSuccessModel[str]
+                   )
 async def upload(file: UploadFile):
     """
     todo: support duplication detect using Redis/Cache
@@ -48,7 +74,7 @@ async def upload(file: UploadFile):
     """
     return {
         "status": STATUS_OK,
-        "data": write_file(file.filename, file.file.read())
+        "data": write_image(file.filename, file.file.read())
     }
 
 
@@ -64,11 +90,23 @@ async def get_list():
     }
 
 
+@files_router.delete('/clear')
+async def clear_uploaded_files():
+    dirs = [UPLOADED_DATA_DIR, UPLOADED_THUMB_DATA_DIR]
+    ret = dict((i, 0) for i in dirs)
+    for dir in dirs:
+        os.chdir(dir)
+        for filename in os.listdir(dir):
+            os.remove(filename)
+            ret[dir] += 1
+    return ret
+
+
 @files_router.get("/{file_id}")
-async def get_file(file_id: str = Path(
-    example=get_uploaded_first_file()
-)):
-    file_path = get_uploaded_file_path_from_id(file_id)
+async def get_file(file_id: str = Path(), raw=False):
+    logger.info(f'reading file id={file_id}')
+    file_path = get_uploaded_file_path_from_id(file_id, raw)
+    logger.info({"file_id": file_id, "file_path": file_path})
     if os.path.exists(file_path):
         return FileResponse(file_path)
     raise HTTPException(status_code=404, detail=f"not found file of id={file_id}")
@@ -93,4 +131,4 @@ async def handle_external(res=Depends(check_external)):
     for item in data:
         # todo: 实现一个UploadFile
         res = requests.get(item['avatar'])
-        return write_file(f'{item["name"]}.png', res.content)
+        return write_image(f'{item["name"]}.png', res.content)

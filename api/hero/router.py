@@ -6,13 +6,18 @@ from typing import Dict, List
 import pymongo
 from fastapi import APIRouter
 
-from api.hero.ds import HeroModel, NotionHeroModel
+from api.files import write_image
+from api.hero.ds import NotionHeroModel
 from api.hero.notion import crawl_notion_heroes, parse_notion_heroes_info
-from db import coll_hero
+from config import BACKEND_ENDPOINT
+from log import getLogger
+from packages.general.db import coll_hero
 from packages.general.session import session
 from path import CACHE_DATA_DIR
 
 hero_router = APIRouter(prefix="/heroes", tags=["heroes"])
+
+logger = getLogger("API_Hero")
 
 
 @hero_router.patch("/update")
@@ -21,23 +26,6 @@ def update_basic(data: NotionHeroModel):
         {"_id": data.id},
         {"$set": data.dict(exclude_unset=True)},
         return_document=True
-    )
-
-
-def get_task_of_update_hero(data: NotionHeroModel) -> pymongo.UpdateOne:
-    """
-    这个函数主要是用来照顾批量更新的
-
-    :param data:
-    :return:
-    """
-    res_avatar_notion = session.get(data.avatar_notion)
-    res_file_upload = session.post('/files/upload', files={"file": (f"{data.name}.png", res_avatar_notion.content)})
-    data.avatar = res_file_upload.json()['data']
-    return pymongo.UpdateOne(
-        {"id": data.id},
-        {"$set": data.dict()},
-        upsert=True
     )
 
 
@@ -50,12 +38,26 @@ def get_list() -> Dict:
     }
 
 
-@hero_router.get("/init")
-def get_init_list() -> Dict:
+def init_hero():
     """
     todo: use raw (but should query the list)
-    :return:
     """
+
+    def get_task_of_update_hero(data: NotionHeroModel) -> pymongo.UpdateOne:
+        """
+        这个函数主要是用来照顾批量更新的
+
+        :param data:
+        :return:
+        """
+        res_avatar_notion = session.get(data.avatar_notion)
+        data.avatar = write_image('', res_avatar_notion.content)
+        return pymongo.UpdateOne(
+            {"id": data.id},
+            {"$set": data.dict()},
+            upsert=True
+        )
+
     raw_data = crawl_notion_heroes()
     # 持久化方便复查
     with open(os.path.join(CACHE_DATA_DIR, f"notin_users_{datetime.now().isoformat()}.json"), "w") as f:
@@ -67,7 +69,17 @@ def get_init_list() -> Dict:
     return result.bulk_api_result
 
 
+@hero_router.get("/init")
+def get_init_list() -> Dict:
+    return init_hero()
+
+
 @hero_router.put('/reset')
 def reset():
     result = coll_hero.delete_many({})
     return result.raw_result
+
+
+if __name__ == '__main__':
+    #     init
+    init_hero()

@@ -4,17 +4,15 @@ ref: https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/
 import time
 from datetime import timedelta
 
-from fastapi import Depends, HTTPException, status, APIRouter, Form, UploadFile, Body
-from fastapi.encoders import jsonable_encoder
+from fastapi import Depends, HTTPException, status, APIRouter, Form
 from fastapi.security import OAuth2PasswordRequestForm
-from pydantic import BaseModel
 
 from api.ds import BaseResSuccessModel, STATUS_OK
 from api.user.utils import get_password_hash, authenticate_user, create_access_token, get_authed_user
 
 from config import SECURITY_ACCESS_TOKEN_EXPIRE_MINUTES
 from api.user.ds import User, UserInDB, UserProfile
-from db import coll_user
+from packages.general.db import coll_user
 from log import getLogger
 
 from packages.general.rand import gen_random_activation_code
@@ -37,7 +35,8 @@ async def register(
     if coll_user.find_one({"username": username, "activated": True}):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="User has been existed!")
+            detail="User has been existed!"
+        )
 
     # send email for validation
     code = gen_random_activation_code()

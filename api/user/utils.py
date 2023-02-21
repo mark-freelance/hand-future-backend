@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 from starlette import status
 
 from config import SECRET_KEY, SECURITY_ALGO
-from db import coll_user
+from packages.general.db import coll_user
 from log import getLogger
 
 from .ds import TokenData, UserInDB

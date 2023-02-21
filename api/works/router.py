@@ -1,11 +1,9 @@
-from typing import List
-
 from fastapi import APIRouter, Depends
 
 from api.ds import BaseResSuccessModel, ListResModel, STATUS_OK
 from api.user.utils import get_authed_user
 from api.works.ds import Work
-from db import coll_work
+from packages.general.db import coll_work
 
 works_router = APIRouter(prefix="/works", tags=["works"])
 
