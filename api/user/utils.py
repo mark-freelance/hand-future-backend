@@ -46,17 +46,6 @@ def authenticate_user(username: str, password: str):
     return user
 
 
-def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=SECURITY_ALGO)
-    return encoded_jwt
-
-
 async def get_authed_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -67,11 +56,25 @@ async def get_authed_user(token: str = Depends(oauth2_scheme)):
         payload = jwt.decode(token, SECRET_KEY, algorithms=[SECURITY_ALGO])
         username: str = payload.get("sub")
         if username is None:
+            logger.warning(f'[401] username in payload is None')
             raise credentials_exception
         token_data = TokenData(username=username)
     except JWTError:
+        logger.warning(f'[401] JWTError')
         raise credentials_exception
     user = get_user(username=token_data.username)
     if user is None:
+        logger.warning(f'[401] username in database is None')
         raise credentials_exception
     return user
+
+
+def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=SECURITY_ALGO)
+    return encoded_jwt

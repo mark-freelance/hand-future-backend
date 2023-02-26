@@ -20,7 +20,7 @@ class UserSocial(BaseModel):
 
 
 class UserProfile(User):
-    avatar: str = ''
+    avatar: str = None
     social: Optional[UserSocial]
 
 

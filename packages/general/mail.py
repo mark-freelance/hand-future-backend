@@ -42,7 +42,8 @@ class MyMail:
         logger.info("successfully sent mail!")
         server.close()
 
-    def send_hand_future_activation_mail(self, recipients: List[str], activation_code: str, kind: str = "html"):
+    def send_hand_future_activation_mail(self, recipients: List[str], activation_code: str, subject: str = None,
+                                         kind: str = "html"):
         if kind == "html":
             with open(os.path.join(CONFIG_DATA_DIR, "template.html"), 'r') as f:
                 content = f.read() \
@@ -50,7 +51,7 @@ class MyMail:
         else:
             content = activation_code
         logger.info(f'sending content: {content}')
-        self._send_html_mail("【携手未来】激活验证码", content, recipients, kind)
+        self._send_html_mail(f"【{subject or '携手未来'}】Activation Code", content, recipients, kind)
 
 
 if __name__ == '__main__':

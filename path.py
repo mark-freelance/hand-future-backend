@@ -16,3 +16,5 @@ UPLOADED_THUMB_DATA_DIR = ensure_dir_exist(os.path.join(DATA_DIR, "uploaded_thum
 AVATAR_DATA_DIR = ensure_dir_exist(os.path.join(DATA_DIR, "avatar"))
 CACHE_DATA_DIR = ensure_dir_exist(os.path.join(DATA_DIR, "cache"))
 CONFIG_DATA_DIR = ensure_dir_exist(os.path.join(DATA_DIR, "config"))
+
+GRAPH_DATA_PATH = os.path.join(DATA_DIR, 'graph.json')

@@ -3,16 +3,18 @@ ref: https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/
 """
 import time
 from datetime import timedelta
+from typing import Any
 
-from fastapi import Depends, HTTPException, status, APIRouter, Form
+from fastapi import Depends, HTTPException, status, APIRouter, Form, Query, Body
 from fastapi.security import OAuth2PasswordRequestForm
+from pydantic import BaseModel
 
 from api.ds import BaseResSuccessModel, STATUS_OK
 from api.user.utils import get_password_hash, authenticate_user, create_access_token, get_authed_user
 
 from config import SECURITY_ACCESS_TOKEN_EXPIRE_MINUTES
 from api.user.ds import User, UserInDB, UserProfile
-from packages.general.db import coll_user
+from packages.general.db import coll_user, db
 from log import getLogger
 
 from packages.general.rand import gen_random_activation_code
@@ -28,9 +30,10 @@ logger = getLogger("Auth")
 async def register(
         username: str = Form(...),
         password: str = Form(...),
-        nickname: str = Form(...),
-        email: str = Form(...),
-        avatar: str = Form(...)
+        email: str = Form(None),
+        nickname: str = Form(None),
+        avatar: str = Form(None),
+        subject: str = Form(None)
 ):
     if coll_user.find_one({"username": username, "activated": True}):
         raise HTTPException(
@@ -40,7 +43,7 @@ async def register(
 
     # send email for validation
     code = gen_random_activation_code()
-    my_mail.send_hand_future_activation_mail([email], code, "html")
+    my_mail.send_hand_future_activation_mail([email], code, subject, "html")
 
     user_data = {
         "_id": username,
@@ -105,27 +108,53 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@user_router.get("/me", response_model=UserProfile)
-async def read_user(user: User = Depends(get_authed_user)):
-    return user
-
-
-@user_router.patch('/update', response_model=BaseResSuccessModel[UserProfile])
-async def update_user(data: UserProfile, user: User = Depends(get_authed_user)):
+@user_router.get("/me")
+async def read_user(user=Depends(get_authed_user)):
     """
-    理论上不可修改 username、password、email，其他的可以更改
-    todo: do more restriction
+    todo: add more restriction on return (what about dynamic data structure ? should we separate tables ?)
 
-    :param data:
     :param user:
     :return:
     """
-    partial_data = data.dict(exclude_unset=True)
-    logger.info({"/user/update": {"data": data, "partial_data": partial_data}})
-    data = coll_user.find_one_and_update(
+    return user
+
+
+@user_router.get("/detail")
+async def read_user(coll_name: str, user=Depends(get_authed_user)):
+    """
+    todo: add more restriction on return (what about dynamic data structure ? should we separate tables ?)
+
+    :param coll_name:
+    :param user:
+    :return:
+    """
+    return db[coll_name].find_one({"_id": user.username})
+
+
+@user_router.patch('/update', response_model=BaseResSuccessModel[Any])
+async def update_user(coll_name: str = Query('user'), data: dict = Body(...), user: User = Depends(get_authed_user)):
+    """
+    partial update, ref: https://fastapi.tiangolo.com/tutorial/body-updates/
+
+    理论上不可修改 username、password、email，其他的可以更改
+
+    ~~cancelled: do more restriction~~
+
+    升级：允许对任意子表进行修改（例如 SYS，基于另一个项目），这样就不方面做很多限制了
+
+    :param coll_name: 更新一些其他表的信息
+
+    :param data: ref: https://stackoverflow.com/a/65114346/9422455
+
+    :param user:
+
+    :return:
+    """
+    logger.info({"/user/update": {"coll_name": coll_name, "data": data}})
+    data = db[coll_name].find_one_and_update(
         {"_id": user.username},
-        # partial update, ref: https://fastapi.tiangolo.com/tutorial/body-updates/
-        {"$set": partial_data},
+        {"$set": data},
+        upsert=True,
         return_document=True
     )
     return {

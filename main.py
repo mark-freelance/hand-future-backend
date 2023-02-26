@@ -9,6 +9,7 @@ from starlette.middleware import Middleware
 # 要用这个：
 from starlette.middleware.cors import CORSMiddleware
 
+from api.data import data_router
 from api.files import files_router
 from api.wechat import wechat_router
 from api.user.router import user_router
@@ -24,12 +25,23 @@ origins = [
 
     "http://82.157.185.34",
     "http://82.157.185.34:3000",
+    "https://82.157.185.34",
+    "https://82.157.185.34:3000",
 
     "http://gkleifeng.com",
     "http://gkleifeng.com:3000",
-
     "https://gkleifeng.com",
     "https://gkleifeng.com:3000",
+
+    'http://101.43.159.254',
+    'http://101.43.159.254:3000',
+    'https://101.43.159.254',
+    'https://101.43.159.254:3000',
+
+    # another project
+    "http://localhost:3010",
+    "http://82.157.185.34:3010",
+    "http://gkleifeng.com:3010",
 ]
 
 app = FastAPI(
@@ -46,6 +58,7 @@ app = FastAPI(
 )
 
 app.include_router(user_router)
+app.include_router(data_router)
 app.include_router(works_router)
 app.include_router(hero_router)
 app.include_router(wechat_router)
