@@ -10,7 +10,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
 
 from api.ds import BaseResSuccessModel, STATUS_OK
-from api.user.utils import get_password_hash, authenticate_user, create_access_token, get_authed_user
+from api.user.utils import get_password_hash, authenticate_user, create_access_token, get_authed_user, get_user
 
 from config import SECURITY_ACCESS_TOKEN_EXPIRE_MINUTES
 from api.user.ds import User, UserInDB, UserProfile
@@ -161,3 +161,11 @@ async def update_user(coll_name: str = Query('user'), data: dict = Body(...), us
         "status": STATUS_OK,
         "data": data
     }
+
+
+@user_router.put('/set_role')
+def set_role(username: str, role: str):
+    user = get_user(username)
+    if not user:
+        raise HTTPException(status_code=404)
+    return coll_user.find_one_and_update({"_id": username}, {"$set": {"role": role}}, return_document=True)

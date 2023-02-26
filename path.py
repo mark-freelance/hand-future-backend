@@ -18,3 +18,4 @@ CACHE_DATA_DIR = ensure_dir_exist(os.path.join(DATA_DIR, "cache"))
 CONFIG_DATA_DIR = ensure_dir_exist(os.path.join(DATA_DIR, "config"))
 
 GRAPH_DATA_PATH = os.path.join(DATA_DIR, 'graph.json')
+GRAPH_DATA_BAK_PATH = os.path.join(DATA_DIR, 'graph.bak.json')
