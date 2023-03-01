@@ -22,6 +22,7 @@ class UserSocial(BaseModel):
 class UserProfile(User):
     avatar: str = None
     social: Optional[UserSocial]
+    role: str = None
 
 
 class UserInDB(UserProfile):

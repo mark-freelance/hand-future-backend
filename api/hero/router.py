@@ -4,7 +4,8 @@ from datetime import datetime
 from typing import Dict, List
 
 import pymongo
-from fastapi import APIRouter
+from fastapi import APIRouter, Body, HTTPException
+from starlette import status
 
 from api.files import write_image
 from api.hero.ds import NotionHeroModel
@@ -21,10 +22,16 @@ logger = getLogger("API_Hero")
 
 
 @hero_router.patch("/update")
-def update_basic(data: NotionHeroModel):
+def update_basic(data: dict = Body()):
+    if not data.get('id'):
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail="hero id is required"
+        )
     return coll_hero.find_one_and_update(
-        {"_id": data.id},
-        {"$set": data.dict(exclude_unset=True)},
+        {"_id": data['id']},
+        {"$set": data},
+        upsert=True,
         return_document=True
     )
 
@@ -36,6 +43,14 @@ def get_list() -> Dict:
         "size": data.__len__(),
         "list": data
     }
+
+
+@hero_router.get("/")
+def get_single(id: str) -> Dict:
+    data = coll_hero.find_one({"_id": id})
+    if not data:
+        raise HTTPException(status_code=404, detail='id not exists')
+    return data
 
 
 def init_hero():
@@ -53,7 +68,7 @@ def init_hero():
         res_avatar_notion = session.get(data.avatar_notion)
         data.avatar = write_image('', res_avatar_notion.content)
         return pymongo.UpdateOne(
-            {"id": data.id},
+            {"_id": data.id},
             {"$set": data.dict()},
             upsert=True
         )

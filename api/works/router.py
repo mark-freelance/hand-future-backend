@@ -1,16 +1,15 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
 from api.ds import BaseResSuccessModel, ListResModel, STATUS_OK
-from api.user.utils import get_authed_user
-from api.works.ds import Work
+from api.works.ds import IWork
 from packages.general.db import coll_work
 
 works_router = APIRouter(prefix="/works", tags=["works"])
 
 
-@works_router.get('/', response_model=ListResModel[Work])
-async def get_collection_of_works(username: str):
-    data = list(coll_work.find({"username": username}))
+@works_router.get('/', response_model=ListResModel[IWork])
+async def get_collection_of_works(user_id: str):
+    data = list(coll_work.find({"user_id": user_id}))
     return {
         "status": STATUS_OK,
         "data": {
@@ -20,11 +19,18 @@ async def get_collection_of_works(username: str):
     }
 
 
-@works_router.post('/add', response_model=BaseResSuccessModel[str])
-async def post_work(work: Work, user=Depends(get_authed_user)):
-    data = {"username": user.username, **work.dict()}
-    res = coll_work.insert_one(data)
-    return {
-        "status": STATUS_OK,
-        "data": str(res.inserted_id)
-    }
+@works_router.patch('/update')
+async def update_work(work: IWork):
+    work_dict = work.dict(exclude_unset=True)
+    work_dict['_id'] = work_dict["id"]
+    return coll_work.find_one_and_update(
+        {"_id": work_dict["_id"]},
+        {"$set": work_dict},
+        return_document=True,
+        upsert=True
+    )
+
+
+@works_router.delete('/')
+async def delete_work(id: str):
+    return coll_work.delete_one({"_id": id}).raw_result

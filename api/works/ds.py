@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List
 
 from pydantic import BaseModel
 
@@ -11,15 +12,31 @@ class WorkType(str, Enum):
     others = "others"
 
 
-class Work(BaseModel):
-    title: str
-    type: WorkType
-    content: str
+class TypographyLayout(str, Enum):
+    typography_plain = 'typography_plain',
+    typography_horizontal_bg = 'typography_horizontal_bg',
+    typography_horizontal = 'typography_horizontal',
+    typography_vertical = 'typography_vertical',
 
-    class Config:
-        schema_extra = {
-            "example": {
-                "type": WorkType.bilibiliVideo,
-                "content": "https://www.bilibili.com/video/BV11Y411i76T/"
-            }
-        }
+
+class SourcePlatform(str, Enum):
+    plain = 'plain',
+    bilibiliVideo = 'bilibiliVideo',
+    wechatArticle = 'wechatArticle',
+
+
+class WorkSource(BaseModel):
+    platform: SourcePlatform
+    url: str = None
+
+
+class IWork(BaseModel):
+    id: str
+    user_id: str
+    layout: TypographyLayout
+    title: str
+    cover: str
+    description: str
+    content: str
+    connections: List[str]
+    source: WorkSource
