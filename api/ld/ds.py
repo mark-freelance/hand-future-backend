@@ -1,32 +1,41 @@
-import time
+from enum import Enum
 
-from pydantic import BaseModel, HttpUrl, validator
+from pydantic import BaseModel, HttpUrl, Field
+
+
+class BillActionType(str, Enum):
+    charge = 'charge'
+    redeem = 'redeem'
 
 
 class BaseEventModel(BaseModel):
-    timestamp: float
-
-    @validator('timestamp')
-    def time_should_latest(cls, v):
-        cur_time = time.time()
-        # 这里的校验，不但会在 create 时执行，还会在 query 时执行
-        if not 0 < v < cur_time:
-            raise ValueError(f'invalid timestamp: {v}, current: {cur_time}')
-        return v
+    class Config:
+        use_enum_values = True  # ref: https://stackoverflow.com/a/65211727/9422455
 
 
 class BillModel(BaseEventModel):
-    activity_name: str
-    action: str
-    points: int
-
-
-class ChargeModel(BaseEventModel):
-    points: int
+    action: BillActionType
+    change: int
+    detail: dict = None
 
 
 class ActivityModel(BaseEventModel):
     activity_name: str
     organizer_name: str
-    picture_url: HttpUrl  # ref: https://docs.pydantic.dev/usage/types/#urls
     description: str
+
+
+class ProductModel(BaseEventModel):
+    activity_name: str
+    organizer_name: str
+    picture_url: HttpUrl = Field(
+        ...,
+        # ref: https://fastapi.tiangolo.com/tutorial/schema-extra-example/#field-additional-arguments
+        example='https://tailwindcss.com/_next/static/media/tailwindcss-mark.79614a5f61617ba49a0891494521226b.svg'
+    )
+    description: str
+    price: float
+
+
+class TradedProductModel(BaseEventModel):
+    product_id: str

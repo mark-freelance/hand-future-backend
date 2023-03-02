@@ -1,9 +1,8 @@
-from typing import List
+import time
 
-from fastapi import APIRouter, Depends, HTTPException
-from starlette import status
+from fastapi import APIRouter, Depends
 
-from api.ld.ds import BillModel, ChargeModel
+from api.ld.ds import BillModel, BillActionType
 from api.user.ds import User
 from api.user.utils import get_authed_user
 from packages.general.db import db, coll_user
@@ -11,41 +10,35 @@ from packages.general.db import db, coll_user
 ld_bills_router = APIRouter(prefix='/bills', tags=['ld'])
 
 coll_ld_bills = db['ld_bills']
-FIELD_LD_POINT_BALANCE = "ld_points"
+FIELD_LD_BALANCE = "ld_balance"
 
 
-@ld_bills_router.get('/')
-def get_current_points(user: User = Depends(get_authed_user)):
-    return coll_user.find_one({"_id": user.username}).get(FIELD_LD_POINT_BALANCE, 0)
+@ld_bills_router.get('/current', tags=['authentication'])
+def get_current_balance(user: User = Depends(get_authed_user)):
+    return coll_user.find_one({"_id": user.username}).get(FIELD_LD_BALANCE, 0)
 
 
-@ld_bills_router.get('/list', response_model=List[BillModel])
-def get_bills(user: User = Depends(get_authed_user)):
-    data = list(coll_ld_bills.find({"username": user.username}))
-    return data
+@ld_bills_router.get('/list', tags=['authentication'])
+def get_bill_history(user: User = Depends(get_authed_user)):
+    return list(coll_ld_bills.find({"username": user.username}))
 
 
-@ld_bills_router.post('/charge')
-def charge_bills(charge_model: ChargeModel, user: User = Depends(get_authed_user)):
-    # todo: add charge history
-    return coll_user.find_one_and_update(
+@ld_bills_router.post('/charge', tags=['authentication'])
+def charge_account(points: int, user: User = Depends(get_authed_user)):
+    bill = BillModel(action=BillActionType.charge, change=points, detail={})
+    return add_bill_record(bill, user)
+
+
+@ld_bills_router.post('/add_record', tags=['authentication'])
+def add_bill_record(bill: BillModel, user: User = Depends(get_authed_user)):
+    cur_balance = get_current_balance(user)
+    new_balance = cur_balance + bill.change
+
+    # sync with user balance
+    coll_user.update_one(
         {"_id": user.username},
-        {"$inc": {FIELD_LD_POINT_BALANCE: charge_model.points}},
-        return_document=True
-    )[
-        FIELD_LD_POINT_BALANCE]
-
-
-@ld_bills_router.post('/redeem')
-def redeem(bill: BillModel, user: User = Depends(get_authed_user), cur_points: int = Depends(get_current_points)):
-    if bill.points > cur_points:
-        raise HTTPException(
-            status_code=status.HTTP_406_NOT_ACCEPTABLE,
-            detail="Failed to redeem this product since you have not enough points!"
-        )
-    coll_ld_bills.insert_one(dict(**bill.dict(), username=user.username))
-    return coll_user.find_one_and_update(
-        {"_id": user.username},
-        {"$inc": {FIELD_LD_POINT_BALANCE: -bill.points}},
-        return_document=True
+        {"$set": {FIELD_LD_BALANCE: new_balance}},
     )
+
+    # add bill record
+    return coll_ld_bills.insert_one(dict(**bill.dict(), balance=new_balance, username=user.username)).inserted_id

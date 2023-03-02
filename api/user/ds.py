@@ -32,4 +32,4 @@ class UserInDB(UserProfile):
     register_time: float
 
     # ld_admin project
-    ld_point_balance: int = 0
+    ld_balance: int = 0
