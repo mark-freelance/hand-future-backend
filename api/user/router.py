@@ -60,6 +60,8 @@ async def register(
         "activated": False,
         "activation_code": code,
         "register_time": time.time(),
+        
+        "ld_point_balance": 0
     }
     # validate user_data
     UserInDB(**user_data)

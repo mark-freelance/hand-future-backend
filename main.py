@@ -1,5 +1,3 @@
-import logging
-
 import uvicorn
 from fastapi import FastAPI
 from starlette.middleware import Middleware
@@ -11,6 +9,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from api.data import data_router
 from api.files import files_router
+from api.ld.router import ld_router
 from api.wechat import wechat_router
 from api.user.router import user_router
 from api.hero.router import hero_router
@@ -38,7 +37,7 @@ origins = [
     'https://101.43.159.254',
     'https://101.43.159.254:3000',
 
-    # another project
+    # ld_admin project
     "http://localhost:3010",
     "http://82.157.185.34:3010",
     "http://gkleifeng.com:3010",
@@ -63,6 +62,7 @@ app.include_router(works_router)
 app.include_router(hero_router)
 app.include_router(wechat_router)
 app.include_router(files_router)
+app.include_router(ld_router)
 
 
 @app.get("/")

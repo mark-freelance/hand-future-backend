@@ -10,7 +10,6 @@ from starlette import status
 from api.files import write_image
 from api.hero.ds import NotionHeroModel
 from api.hero.notion import crawl_notion_heroes, parse_notion_heroes_info
-from config import BACKEND_ENDPOINT
 from log import getLogger
 from packages.general.db import coll_hero
 from packages.general.session import session

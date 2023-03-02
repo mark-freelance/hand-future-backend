@@ -30,3 +30,6 @@ class UserInDB(UserProfile):
     activated: bool
     activation_code: str
     register_time: float
+
+    # ld_admin project
+    ld_point_balance: int = 0
