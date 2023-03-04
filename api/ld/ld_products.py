@@ -59,11 +59,7 @@ def redeem_product(trade: RedeemProductModel, user: UserInDB = Depends(get_authe
             detail='Not exist product of id=' + product_id_str
         )
 
-    # check product redeemed (in case of duplication)
-    if coll_ld_bills.find_one(
-            {"username": user.username, "action": BillActionType.redeem_product, "detail._id": product_id}
-            ):
-        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail='You have redeemed this product')
+    # product allowed to be redeemed again
 
     # check user balance
     price = product['price']
