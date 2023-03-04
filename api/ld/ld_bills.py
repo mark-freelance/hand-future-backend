@@ -19,8 +19,8 @@ def get_current_balance(user: User = Depends(get_authed_user)):
 
 
 @ld_bills_router.get('/list', tags=['authentication'])
-def get_bill_history(user: User = Depends(get_authed_user)):
-    return list(coll_ld_bills.find({"username": user.username}))
+def get_bill_history(action=None, user: User = Depends(get_authed_user)):
+    return list(coll_ld_bills.find({"username": user.username, "action": action}))
 
 
 @ld_bills_router.post('/charge', tags=['authentication'])

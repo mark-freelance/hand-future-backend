@@ -1,14 +1,9 @@
-import time
-from typing import List
-
-import uuid
-
 from bson import ObjectId
 from bson.errors import InvalidId
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 
-from api.ld.ds import ProductModel, BillModel, BillActionType, TradedProductModel
+from api.ld.ds import ProductModel, BillModel, BillActionType, RedeemProductModel
 from api.ld.ld_bills import coll_ld_bills, add_bill_record
 from api.user.ds import User, UserInDB
 from api.user.utils import get_authed_user
@@ -17,9 +12,6 @@ from packages.general.db import db
 ld_products_router = APIRouter(prefix='/products', tags=['ld'])
 
 coll_ld_products = db['ld_products']
-
-# since each product can be purchased by multiple users, we should separate in another table
-coll_ld_products_traded = db['ld_products_traded']
 
 
 @ld_products_router.get('/all', tags=['open'])
@@ -30,11 +22,12 @@ def show_all_products():
 @ld_products_router.get('/list', tags=['authentication'])
 def get_my_products(user: User = Depends(get_authed_user)):
     """
-    todo: do we need to return the detailed product info ?
+    ~~todo: do we need to return the detailed product info ?~~
+    yes, we do, and we will parse the detailed info in frontend
     :param user:
     :return:
     """
-    return list(coll_ld_products_traded.find({"username": user.username}))
+    return list(coll_ld_bills.find({"username": user.username, "action": BillActionType.redeem_product}))
 
 
 @ld_products_router.post('/add', tags=['open'])
@@ -48,7 +41,7 @@ def clear_products():
 
 
 @ld_products_router.post('/redeem', tags=['authentication'])
-def redeem_product(trade: TradedProductModel, user: UserInDB = Depends(get_authed_user)):
+def redeem_product(trade: RedeemProductModel, user: UserInDB = Depends(get_authed_user)):
     product_id_str = trade.product_id
     try:
         product_id = ObjectId(product_id_str)
@@ -67,7 +60,9 @@ def redeem_product(trade: TradedProductModel, user: UserInDB = Depends(get_authe
         )
 
     # check product redeemed (in case of duplication)
-    if coll_ld_products_traded.find_one({"username": user.username, "product_id": product_id_str}):
+    if coll_ld_bills.find_one(
+            {"username": user.username, "action": BillActionType.redeem_product, "detail._id": product_id}
+            ):
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail='You have redeemed this product')
 
     # check user balance
@@ -76,12 +71,5 @@ def redeem_product(trade: TradedProductModel, user: UserInDB = Depends(get_authe
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="You have not enough points!")
 
     # do the trade
-    coll_ld_products_traded.insert_one(dict(**trade.dict(), username=user.username))
-
-    # sync with bill
-    bill = BillModel(
-        action=BillActionType.redeem,
-        change=-price,
-        detail=product
-    )
+    bill = BillModel(action=BillActionType.redeem_product, change=-price, detail=product)
     return add_bill_record(bill, user)

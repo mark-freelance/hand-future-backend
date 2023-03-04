@@ -1,16 +1,16 @@
 import json
-import os.path
+import os
 from datetime import datetime
 from pprint import pprint
 from typing import List
 from urllib.parse import quote
 
-from api.hero.ds import HeroModel, NotionHeroModel
+from api.hero.ds import NotionHeroModel
 from config import NOTION_COOKIE, NOTION_COL_MAP
 from log import getLogger
 from packages.general.re import parse_p1
-from path import CACHE_DATA_DIR
 from packages.general.session import session
+from path import CACHE_DATA_DIR
 
 logger = getLogger("notion")
 
@@ -62,7 +62,12 @@ def crawl_notion_heroes():
         json=data,
         headers={'Cookie': NOTION_COOKIE},
     )
-    return res.json()
+
+    data = res.json()
+    # 持久化方便复查
+    with open(os.path.join(CACHE_DATA_DIR, f"notin_users_{datetime.now().isoformat()}.json"), "w") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    return data
 
 
 def parse_notion_heroes_info(data) -> List[NotionHeroModel]:

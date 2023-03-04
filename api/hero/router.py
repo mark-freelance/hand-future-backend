@@ -73,9 +73,6 @@ def init_hero():
         )
 
     raw_data = crawl_notion_heroes()
-    # 持久化方便复查
-    with open(os.path.join(CACHE_DATA_DIR, f"notin_users_{datetime.now().isoformat()}.json"), "w") as f:
-        json.dump(raw_data, f, ensure_ascii=False, indent=2)
 
     data: List[NotionHeroModel] = parse_notion_heroes_info(raw_data)
     tasks = list(map(get_task_of_update_hero, data))
