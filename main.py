@@ -1,4 +1,7 @@
-import uvicorn
+import dotenv
+
+dotenv.load_dotenv()
+
 from fastapi import FastAPI
 from starlette.middleware import Middleware
 
@@ -14,9 +17,7 @@ from api.ld.router import ld_router
 from api.wechat import wechat_router
 from api.user.router import user_router
 from api.hero.router import hero_router
-
 from api.works.router import works_router
-from config import HOST, PORT, IS_DEV
 
 origins = [
     # "*" # 在开启 credentials 的情况下，不能用 *，否则会直接报错
@@ -70,7 +71,3 @@ app.include_router(ld_router)
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
-
-
-if __name__ == '__main__':
-    uvicorn.run(app, host=HOST, port=PORT, reload=IS_DEV)

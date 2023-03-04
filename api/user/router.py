@@ -1,19 +1,18 @@
 """
 ref: https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/
 """
+import os
 import time
 from datetime import timedelta
 from typing import Any
 
 from fastapi import Depends, HTTPException, status, APIRouter, Form, Query, Body
 from fastapi.security import OAuth2PasswordRequestForm
-from pydantic import BaseModel
 
 from api.ds import BaseResSuccessModel, STATUS_OK
 from api.user.utils import get_password_hash, authenticate_user, create_access_token, get_authed_user, get_user
 
-from config import SECURITY_ACCESS_TOKEN_EXPIRE_MINUTES
-from api.user.ds import User, UserInDB, UserProfile
+from api.user.ds import User, UserInDB
 from packages.general.db import coll_user, db
 from log import getLogger
 
@@ -60,7 +59,7 @@ async def register(
         "activated": False,
         "activation_code": code,
         "register_time": time.time(),
-        
+
         "ld_point_balance": 0
     }
     # validate user_data
@@ -102,7 +101,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token_expires = timedelta(minutes=SECURITY_ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(days=7)
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )

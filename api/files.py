@@ -1,18 +1,15 @@
 import os
 import uuid
-from copy import copy
 from typing import Union
-from urllib.parse import quote
 
 import requests
 from PIL import Image
-from fastapi import UploadFile, Path, HTTPException, Depends, Query
+from fastapi import UploadFile, Path, HTTPException, Depends
 from fastapi.routing import APIRouter
 from starlette.responses import FileResponse
 
 from api.ds import BaseResSuccessModel, STATUS_OK, ListResModel
 from api.hero.ds import HeroModel
-from config import BACKEND_ENDPOINT
 from log import getLogger
 from packages.general.db import coll_hero
 from path import UPLOADED_DATA_DIR, UPLOADED_THUMB_DATA_DIR
@@ -59,7 +56,7 @@ def write_image(filename, filedata) -> str:
     img.resize((w, h)).save(
         os.path.join(UPLOADED_THUMB_DATA_DIR, file_id)
     )
-    return BACKEND_ENDPOINT + "/files/" + file_id
+    return os.environ['BACKEND_ENDPOINT'] + "/files/" + file_id
 
 
 @files_router.post("/upload",

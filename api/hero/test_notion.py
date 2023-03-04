@@ -1,12 +1,10 @@
 import json
 import os.path
-from pprint import pprint
 from typing import List
 from unittest import TestCase
 
 from api.hero.ds import NotionHeroModel
-from api.hero.notion import get_notion_avatar_url
-from config import NOTION_COL_MAP
+from api.hero.notion import get_notion_avatar_url, NOTION_COL_MAP
 from packages.general.re import parse_p1
 from path import CACHE_DATA_DIR
 

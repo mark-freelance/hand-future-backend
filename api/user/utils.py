@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta, datetime
 from typing import Union
 
@@ -7,7 +8,6 @@ from jose import jwt, JWTError
 from passlib.context import CryptContext
 from starlette import status
 
-from config import SECRET_KEY, SECURITY_ALGO
 from packages.general.db import coll_user
 from log import getLogger
 
@@ -53,7 +53,7 @@ async def get_authed_user(token: str = Depends(oauth2_scheme)):
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[SECURITY_ALGO])
+        payload = jwt.decode(token, os.environ['SECRET_KEY'], algorithms=[os.environ['SECURITY_ALGO']])
         username: str = payload.get("sub")
         if username is None:
             logger.warning(f'[401] username in payload is None')
