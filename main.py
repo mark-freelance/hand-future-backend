@@ -9,6 +9,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from api.data import data_router
 from api.files import files_router
+from api.heroes2.router import heroes2_router
 from api.ld.router import ld_router
 from api.wechat import wechat_router
 from api.user.router import user_router
@@ -57,11 +58,12 @@ app = FastAPI(
 )
 
 app.include_router(user_router)
+app.include_router(heroes2_router)
 app.include_router(data_router)
 app.include_router(works_router)
-app.include_router(hero_router)
 app.include_router(wechat_router)
 app.include_router(files_router)
+app.include_router(hero_router)
 app.include_router(ld_router)
 
 

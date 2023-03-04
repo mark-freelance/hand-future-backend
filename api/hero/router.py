@@ -8,7 +8,7 @@ from fastapi import APIRouter, Body, HTTPException
 from starlette import status
 
 from api.files import write_image
-from api.hero.ds import NotionHeroModel
+from api.hero.ds import NotionHeroModel, HeroModel
 from api.hero.notion import crawl_notion_heroes, parse_notion_heroes_info
 from log import getLogger
 from packages.general.db import coll_hero
@@ -36,12 +36,8 @@ def update_basic(data: dict = Body()):
 
 
 @hero_router.get("/list")
-def get_list() -> Dict:
-    data = list(coll_hero.find({}, {}))
-    return {
-        "size": data.__len__(),
-        "list": data
-    }
+def get_heroes_list():
+    return list(coll_hero.find({}, {}))
 
 
 @hero_router.get("/")
