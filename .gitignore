@@ -1,5 +1,6 @@
-data/*
-logs/*
+depreciated
+data
+logs
 
 ### VisualStudioCode template
 .vscode/*
