@@ -1,22 +1,15 @@
 from fastapi import APIRouter
 
-from api.ds import BaseResSuccessModel, ListResModel, STATUS_OK
 from api.works.ds import IWork
 from packages.general.db import coll_work
 
 works_router = APIRouter(prefix="/works", tags=["works"])
 
 
-@works_router.get('/', response_model=ListResModel[IWork])
+@works_router.get('/')
 async def get_collection_of_works(user_id: str):
     data = list(coll_work.find({"user_id": user_id}))
-    return {
-        "status": STATUS_OK,
-        "data": {
-            "size": len(data),
-            "data": data
-        }
-    }
+    return data
 
 
 @works_router.patch('/update')

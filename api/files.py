@@ -8,7 +8,6 @@ from fastapi import UploadFile, Path, HTTPException, Depends
 from fastapi.routing import APIRouter
 from starlette.responses import FileResponse
 
-from api.ds import BaseResSuccessModel, STATUS_OK, ListResModel
 from api.hero.ds import HeroModel
 from log import getLogger
 from packages.general.db import coll_hero
@@ -61,7 +60,6 @@ def write_image(filename, filedata) -> str:
 
 @files_router.post("/upload",
                    description='返回上传后的id',
-                   response_model=BaseResSuccessModel[str]
                    )
 async def upload(file: UploadFile):
     """
@@ -69,22 +67,13 @@ async def upload(file: UploadFile):
     :param file:
     :return:
     """
-    return {
-        "status": STATUS_OK,
-        "data": write_image(file.filename, file.file.read())
-    }
+    return write_image(file.filename, file.file.read())
 
 
-@files_router.get("/list", response_model=ListResModel[str])
+@files_router.get("/list")
 async def get_list():
     files_list = get_uploaded_file_list()
-    return {
-        "status": STATUS_OK,
-        "data": {
-            "size": files_list.__len__(),
-            "data": files_list
-        }
-    }
+    return files_list
 
 
 @files_router.delete('/clear')
@@ -109,19 +98,13 @@ async def get_file(file_id: str = Path(), raw=False):
     raise HTTPException(status_code=404, detail=f"not found file of id={file_id}")
 
 
-@files_router.get('/external/check', response_model=ListResModel[HeroModel])
+@files_router.get('/external/check')
 async def check_external():
     items = list(coll_hero.find({"avatar": {"$regex": "notion"}}))
-    return {
-        "status": STATUS_OK,
-        "data": {
-            "size": len(items),
-            "data": items
-        }
-    }
+    return items
 
 
-@files_router.post('/external/handle', response_model=ListResModel[HeroModel])
+@files_router.post('/external/handle')
 async def handle_external(res=Depends(check_external)):
     data = res["data"]["data"]
     data_new = []

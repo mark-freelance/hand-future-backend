@@ -1,7 +1,6 @@
 """
 ref: https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/
 """
-import os
 import time
 from datetime import timedelta
 from typing import Any
@@ -9,7 +8,6 @@ from typing import Any
 from fastapi import Depends, HTTPException, status, APIRouter, Form, Query, Body
 from fastapi.security import OAuth2PasswordRequestForm
 
-from api.ds import BaseResSuccessModel, STATUS_OK
 from api.user.utils import get_password_hash, authenticate_user, create_access_token, get_authed_user, get_user
 
 from api.user.ds import User, UserInDB
@@ -132,7 +130,7 @@ async def read_user(coll_name: str, user=Depends(get_authed_user)):
     return db[coll_name].find_one({"_id": user.username})
 
 
-@user_router.patch('/update', response_model=BaseResSuccessModel[Any])
+@user_router.patch('/update')
 async def update_user(coll_name: str = Query('user'), data: dict = Body(...), user: User = Depends(get_authed_user)):
     """
     partial update, ref: https://fastapi.tiangolo.com/tutorial/body-updates/
@@ -158,10 +156,7 @@ async def update_user(coll_name: str = Query('user'), data: dict = Body(...), us
         upsert=True,
         return_document=True
     )
-    return {
-        "status": STATUS_OK,
-        "data": data
-    }
+    return data
 
 
 @user_router.put('/set_role')
