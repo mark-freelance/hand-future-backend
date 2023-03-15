@@ -8,8 +8,7 @@ works_router = APIRouter(prefix="/works", tags=["works"])
 
 @works_router.get('/')
 async def get_collection_of_works(user_id: str):
-    data = list(coll_work.find({"user_id": user_id}))
-    return data
+    return list(coll_work.find({"user_id": user_id}))
 
 
 @works_router.patch('/update')

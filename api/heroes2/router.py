@@ -61,11 +61,10 @@ def get_graph_data():
                     links.append({"source": item['id'], "target": relation})
 
     graph_data: GraphData = {
-        "nodes": items,
+        "nodes": nodes,
         "links": links
     }
-    # pprint(items)
-    # pprint(graph_data)
+    # print(graph_data)
     return graph_data
 
 

@@ -157,7 +157,7 @@ async def update_user(coll_name: str = Query('user'), data: dict = Body(...), us
         return_document=True
     )
     return data
-
+    
 
 @user_router.put('/set_role')
 def set_role(username: str, role: str):
