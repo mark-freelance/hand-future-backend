@@ -1,6 +1,8 @@
 import os.path
 from typing import List
 
+from env import ENV_MAIL_SENDER_ADDRESS, ENV_MAIL_SENDER_NAME, ENV_MAIL_APP_PASSWORD, ENV_MAIL_SMTP_SERVER, \
+    ENV_MAIL_SMTP_PORT
 from log import getLogger
 
 import smtplib
@@ -17,11 +19,11 @@ class MyMail:
     """
 
     def __init__(self):
-        self._username = os.environ['MAIL_SENDER_ADDRESS']
-        self._sender_name = os.environ['MAIL_SENDER_NAME']
-        self._password = os.environ['MAIL_APP_PASSWORD']
-        self._smtp_server = os.environ['MAIL_SMTP_SERVER']
-        self._smtp_port = os.environ['MAIL_SMTP_PORT']
+        self._username = ENV_MAIL_SENDER_ADDRESS
+        self._sender_name = ENV_MAIL_SENDER_NAME
+        self._password = ENV_MAIL_APP_PASSWORD
+        self._smtp_server = ENV_MAIL_SMTP_SERVER
+        self._smtp_port = ENV_MAIL_SMTP_PORT
 
     def _send_html_mail(self, subject, content, recipients, kind: str):
         sender = self._sender_name  # 会在收到邮件时显示名字（因此可以不必用地址）

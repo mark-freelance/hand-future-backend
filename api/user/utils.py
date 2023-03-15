@@ -1,4 +1,3 @@
-import os
 from datetime import timedelta, datetime
 from typing import Union
 
@@ -8,6 +7,7 @@ from jose import jwt, JWTError
 from passlib.context import CryptContext
 from starlette import status
 
+from env import ENV_SECRET_KEY, ENV_SECURITY_ALGO
 from packages.general.db import coll_user
 from log import getLogger
 
@@ -53,7 +53,7 @@ async def get_authed_user(token: str = Depends(oauth2_scheme)):
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, os.environ['SECRET_KEY'], algorithms=[os.environ['SECURITY_ALGO']])
+        payload = jwt.decode(token, ENV_SECRET_KEY, algorithms=[ENV_SECURITY_ALGO])
         username: str = payload.get("sub")
         if username is None:
             logger.warning(f'[401] username in payload is None')
@@ -76,5 +76,5 @@ def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=SECURITY_ALGO)
+    encoded_jwt = jwt.encode(to_encode, ENV_SECRET_KEY, algorithm=ENV_SECURITY_ALGO)
     return encoded_jwt

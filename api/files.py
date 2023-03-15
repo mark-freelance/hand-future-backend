@@ -58,9 +58,7 @@ def write_image(filename, filedata) -> str:
     return os.environ['BACKEND_ENDPOINT'] + "/files/" + file_id
 
 
-@files_router.post("/upload",
-                   description='返回上传后的id',
-                   )
+@files_router.post("/upload", description='返回上传后的id', )
 async def upload(file: UploadFile):
     """
     todo: support duplication detect using Redis/Cache

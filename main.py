@@ -37,10 +37,9 @@ origins = [
     'https://101.43.159.254',
     'https://101.43.159.254:3000',
 
-    # ld_admin project
-    "http://localhost:3010",
-    "http://82.157.185.34:3010",
-    "http://gkleifeng.com:3010",
+    # frog
+    "http://localhost:2333",
+    "https://www.4func.chat",
 ]
 
 app = FastAPI(
