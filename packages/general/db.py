@@ -15,6 +15,7 @@ pydantic.json.ENCODERS_BY_TYPE[ObjectId] = lambda x: {
 db_client = pymongo.MongoClient(ENV_MONGO_URI)
 db = db_client["hand_future"]
 coll_hero = db["hero"]
+coll_hero_user = db['hero_user']
 coll_user = db["user"]
 coll_work = db['work']
 

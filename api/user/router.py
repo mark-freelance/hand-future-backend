@@ -3,7 +3,7 @@ ref: https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/
 """
 import time
 from datetime import timedelta
-from typing import Any
+from typing import Any, Dict
 
 from fastapi import Depends, HTTPException, status, APIRouter, Form, Query, Body
 from fastapi.security import OAuth2PasswordRequestForm
@@ -11,7 +11,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from api.user.utils import get_password_hash, authenticate_user, create_access_token, get_authed_user, get_user
 
 from api.user.ds import User, UserInDB
-from packages.general.db import coll_user, db
+from packages.general.db import coll_user, db, coll_hero_user
 from log import getLogger
 
 from packages.general.rand import gen_random_activation_code
@@ -157,7 +157,7 @@ async def update_user(coll_name: str = Query('user'), data: dict = Body(...), us
         return_document=True
     )
     return data
-    
+
 
 @user_router.put('/set_role')
 def set_role(username: str, role: str):
@@ -165,3 +165,11 @@ def set_role(username: str, role: str):
     if not user:
         raise HTTPException(status_code=404)
     return coll_user.find_one_and_update({"_id": username}, {"$set": {"role": role}}, return_document=True)
+
+
+@user_router.get("/")
+def get_single(id: str) -> Dict:
+    data = coll_hero_user.find_one({"_id": id})
+    if not data:
+        raise HTTPException(status_code=404, detail='id not exists')
+    return data
