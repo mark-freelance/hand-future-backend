@@ -97,6 +97,8 @@ def parse_notion_heroes_info(data) -> List[NotionHeroModel]:
 
         try:
             notion_hero_model = NotionHeroModel(
+                is_hero=True,
+
                 avatar='',
                 id=user_id,
                 name=parse_p1(r'([\u4e00-\u9fa5]+)', item[NOTION_COL_MAP["name"]]),
@@ -105,7 +107,7 @@ def parse_notion_heroes_info(data) -> List[NotionHeroModel]:
                     parse_p1(r"(http.*?)'", item[NOTION_COL_MAP["avatar"]])
                 ),
                 title=parse_p1(r'([\u4e00-\u9fa5]+)', item.get(NOTION_COL_MAP["title"])),
-                cities=parse_p1(r'([\u4e00-\u9fa5]+)', item.get(NOTION_COL_MAP["cities"]))
+                cities=parse_p1(r'([\u4e00-\u9fa5]+)', item.get(NOTION_COL_MAP["cities"])),
             )
             items.append(notion_hero_model)
         except Exception as e:

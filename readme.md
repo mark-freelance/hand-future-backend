@@ -1,5 +1,10 @@
 # Hand-Future Backend
 
+## todo
+
+-[ ] fix init notion avatar key error
+-[ ] reconstruct user based on hero model
+
 ## install
 
 ### dev start by step

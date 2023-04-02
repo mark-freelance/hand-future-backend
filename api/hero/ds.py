@@ -8,6 +8,8 @@ class HeroModel(BaseModel):
     title: str = None
     cities: str = None
 
+    is_hero: bool = False
+
 
 class NotionHeroModel(HeroModel):
     avatar_notion: str
