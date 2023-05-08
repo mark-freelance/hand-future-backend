@@ -3,19 +3,17 @@ ref: https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/
 """
 import time
 from datetime import timedelta
-from typing import Any, Dict
+from typing import Dict
 
 from fastapi import Depends, HTTPException, status, APIRouter, Form, Query, Body
 from fastapi.security import OAuth2PasswordRequestForm
 
-from api.user.utils import get_password_hash, authenticate_user, create_access_token, get_authed_user, get_user
-
-from api.user.ds import User, UserInDB
-from packages.general.db import coll_user, db, coll_hero_user
-from log import getLogger
-
-from packages.general.rand import gen_random_activation_code
-from packages.general.mail import MyMail
+from src.api.user.utils import get_password_hash, authenticate_user, create_access_token, get_authed_user, get_user
+from src.ds.user import User, UserInDB
+from src.libs.db import db, coll_hero_user, coll_user
+from src.libs.log import getLogger
+from src.libs.mail import MyMail
+from src.libs.rand import gen_random_activation_code
 
 user_router = APIRouter(prefix="/user", tags=["user"])
 
@@ -85,7 +83,8 @@ async def activate(username: str = Form(...), code: str = Form(...)):
         {"$set": {
             "activated": True,
             "activation_time": time.time()
-        }},
+        }
+        },
     )
     return True
 

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from starlette import status
 
-from packages.wechat.article import parse_wechat_article
+from src.libs.wechat.article import parse_wechat_article
 
 wechat_router = APIRouter(prefix="/wechat", tags=["wechat"])
 

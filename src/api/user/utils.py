@@ -7,11 +7,10 @@ from jose import jwt, JWTError
 from passlib.context import CryptContext
 from starlette import status
 
-from env import ENV_SECRET_KEY, ENV_SECURITY_ALGO
-from packages.general.db import coll_user
-from log import getLogger
-
-from .ds import TokenData, UserInDB
+from src.ds.user import TokenData, UserInDB
+from src.libs.db import coll_user
+from src.libs.env import ENV_SECRET_KEY, ENV_SECURITY_ALGO
+from src.libs.log import getLogger
 
 logger = getLogger("Auth")
 

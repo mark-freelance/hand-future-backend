@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from packages.wechat.article import parse_wechat_article, WechatArticleModel
+from src.libs.wechat.article import parse_wechat_article, WechatArticleModel
 
 
 class Test(TestCase):

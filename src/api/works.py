@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from api.works.ds import IWork
-from packages.general.db import coll_work
+from src.ds.work import IWork
+from src.libs.db import coll_work
 
 works_router = APIRouter(prefix="/works", tags=["works"])
 

@@ -2,9 +2,9 @@ from functools import partial
 
 from pydantic import BaseModel
 
-from log import getLogger
-from packages.general.re import parse_p1
-from packages.general.session import session
+from src.libs.log import getLogger
+from src.libs.re import parse_p1
+from src.libs.session import session
 
 logger = getLogger("WechatArticle")
 

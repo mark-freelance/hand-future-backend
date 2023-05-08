@@ -1,12 +1,11 @@
 import os
 import sys
-from urllib.parse import unquote
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from path import UPLOADED_DATA_DIR
+from src.libs.path import UPLOADED_DIR
 
-os.chdir(UPLOADED_DATA_DIR)
+os.chdir(UPLOADED_DIR)
 for filename in os.listdir('.'):
     # filename_new = unquote(filename)
     filename_new = filename[:32] + ".png"

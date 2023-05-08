@@ -1,14 +1,12 @@
 import os.path
-from typing import List
-
-from env import ENV_MAIL_SENDER_ADDRESS, ENV_MAIL_SENDER_NAME, ENV_MAIL_APP_PASSWORD, ENV_MAIL_SMTP_SERVER, \
-    ENV_MAIL_SMTP_PORT
-from log import getLogger
-
 import smtplib
 from email.mime.text import MIMEText
+from typing import List
 
-from path import CONFIG_DATA_DIR
+from src.libs.env import ENV_MAIL_SENDER_ADDRESS, ENV_MAIL_SENDER_NAME, ENV_MAIL_APP_PASSWORD, ENV_MAIL_SMTP_SERVER, \
+    ENV_MAIL_SMTP_PORT
+from src.libs.log import getLogger
+from src.libs.path import CONFIG_DIR
 
 logger = getLogger("Mail")
 
@@ -46,7 +44,7 @@ class MyMail:
     def send_hand_future_activation_mail(self, recipients: List[str], activation_code: str, subject: str = None,
                                          kind: str = "html"):
         if kind == "html":
-            with open(os.path.join(CONFIG_DATA_DIR, "template.html"), 'r') as f:
+            with open(os.path.join(CONFIG_DIR, "template.html"), 'r') as f:
                 content = f.read() \
                     .replace("{{code}}", activation_code)
         else:

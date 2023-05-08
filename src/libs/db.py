@@ -2,7 +2,7 @@ import pydantic
 import pymongo
 from bson import ObjectId
 
-from env import ENV_MONGO_URI
+from src.libs.env import ENV_MONGO_URI
 
 # 它会在 fastapi 返回的时候被解析
 # fix ObjectId & FastApi conflict, ref: https://github.com/tiangolo/fastapi/issues/1515#issuecomment-782835977
@@ -13,11 +13,12 @@ pydantic.json.ENCODERS_BY_TYPE[ObjectId] = lambda x: {
 }
 
 db_client = pymongo.MongoClient(ENV_MONGO_URI)
+
 db = db_client["hand_future"]
+coll_heroes2 = db['heroes2']
+db_client = pymongo.MongoClient(ENV_MONGO_URI)
 coll_hero = db["hero"]
+coll_hero_notion = db["hero_notion"]
 coll_hero_user = db['hero_user']
 coll_user = db["user"]
 coll_work = db['work']
-
-if __name__ == '__main__':
-    print(list(db['ld_products'].find()))

@@ -8,10 +8,9 @@ from fastapi import UploadFile, Path, HTTPException, Depends
 from fastapi.routing import APIRouter
 from starlette.responses import FileResponse
 
-from api.hero.ds import HeroModel
-from log import getLogger
-from packages.general.db import coll_hero
-from path import UPLOADED_DATA_DIR, UPLOADED_THUMB_DATA_DIR
+from src.libs.db import coll_hero
+from src.libs.log import getLogger
+from src.libs.path import UPLOADED_DIR, UPLOADED_THUMB_DATA_DIR
 
 files_router = APIRouter(prefix="/files", tags=["files"])
 
@@ -19,17 +18,17 @@ logger = getLogger("API_Files")
 
 
 def get_uploaded_file_list():
-    return os.listdir(UPLOADED_DATA_DIR)
+    return os.listdir(UPLOADED_DIR)
 
 
 def get_uploaded_first_file() -> Union[str, None]:
-    for file_id in os.listdir(UPLOADED_DATA_DIR):
+    for file_id in os.listdir(UPLOADED_DIR):
         return file_id
     return None
 
 
 def get_uploaded_file_path_from_id(file_id: str, raw=False):
-    return os.path.join(UPLOADED_DATA_DIR if raw else UPLOADED_THUMB_DATA_DIR, file_id)
+    return os.path.join(UPLOADED_DIR if raw else UPLOADED_THUMB_DATA_DIR, file_id)
 
 
 def write_image(filename, filedata) -> str:
@@ -40,7 +39,7 @@ def write_image(filename, filedata) -> str:
 
     # dump raw
     logger.info(f'writing raw image of id={file_id}')
-    raw_img_path = os.path.join(UPLOADED_DATA_DIR, file_id)
+    raw_img_path = os.path.join(UPLOADED_DIR, file_id)
     with open(raw_img_path, "wb") as f:
         f.write(filedata)
 
@@ -76,7 +75,7 @@ async def get_list():
 
 @files_router.delete('/clear')
 async def clear_uploaded_files():
-    dirs = [UPLOADED_DATA_DIR, UPLOADED_THUMB_DATA_DIR]
+    dirs = [UPLOADED_DIR, UPLOADED_THUMB_DATA_DIR]
     ret = dict((i, 0) for i in dirs)
     for dir in dirs:
         os.chdir(dir)

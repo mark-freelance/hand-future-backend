@@ -1,7 +1,7 @@
 import re
 from typing import Union, Any
 
-from log import getLogger
+from src.libs.log import getLogger
 
 logger = getLogger("Regex")
 

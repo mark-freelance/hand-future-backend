@@ -3,16 +3,16 @@ import os.path
 from typing import List
 from unittest import TestCase
 
-from api.hero.ds import NotionHeroModel
-from api.hero.notion import get_notion_avatar_url, NOTION_COL_MAP
 from packages.general.re import parse_p1
-from path import CACHE_DATA_DIR
+from src.ds.hero import NotionHeroModel
+from deprecated.notion_crawl_DEPRECATED import NOTION_COL_MAP, get_notion_avatar_url
+from src.libs.path import CACHE_DIR
 
 
 class Test(TestCase):
     def test_parse_notion_heroes_info(self):
         # self.fail()
-        latest_file = os.path.join(CACHE_DATA_DIR, sorted(os.listdir(CACHE_DATA_DIR))[-1])
+        latest_file = os.path.join(CACHE_DIR, sorted(os.listdir(CACHE_DIR))[-1])
         with open(latest_file, 'r') as f:
             data = json.load(f)
 
