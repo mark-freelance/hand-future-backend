@@ -2,6 +2,7 @@ import json
 import os
 import time
 from pprint import pprint
+from typing import List
 
 from fastapi import APIRouter, Query
 from notion_client import Client
@@ -10,6 +11,7 @@ from starlette.background import BackgroundTasks
 
 from src.config.notion import NOTION_DATABASE_ID
 from src.ds.graph import IGraphData
+from src.ds.hero import HeroModel
 from src.ds.notion import NotionModel
 from src.libs.db import coll_hero_notion, coll_user
 from src.libs.log import getLogger
@@ -22,10 +24,9 @@ logger = getLogger("API_Hero")
 AVATAR_MAP = {}
 
 
-@hero_router.get('/', summary='heroes 是 users 的子集')
-async def list_heroes(id: str = None):
-    query = {} if not id else {"_id": id}
-    return list(coll_hero_notion.find(query, {}))
+@hero_router.get('/', summary='heroes 是 users 的子集', response_model=List[HeroModel])
+async def list_heroes():
+    return list(coll_user.find({"is_hero": True}, {}))
 
 
 @hero_router.post(
@@ -89,10 +90,19 @@ async def init_heroes(
 async def get_graph_data():
     nodes = list(coll_user.find({"avatar": {"$ne": None}, "is_hero": True}))
     ids = [i['id'] for i in nodes]
-    links = [{"source": i['id'], "target": [j for j in i["partners"] if j in ids]} for i in nodes]
-    graph_data: IGraphData = {
-        "nodes": nodes,
-        "links": links
-    }
+    links = []
+    seen = set()  # 要去重
+    for node in nodes:
+        source = node['id']
+        if source in ids:
+            for link in node['partners']:
+                if link in ids:
+                    target = link
+                    cur = ",".join(sorted([source, target]))
+                    if cur not in seen:
+                        seen.add(cur)
+                        links.append({"source": source, "target": target})
+
+    graph_data: IGraphData = {"nodes": nodes, "links": links}
     # print(graph_data)
     return graph_data

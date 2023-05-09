@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 
 from fastapi import APIRouter
 
@@ -17,7 +17,7 @@ async def list_users(user_id: str = None):
     todo: add more restriction on return (what about dynamic data structure ? should we separate tables ?)
 
     """
-    query = {"_id": user_id} if user_id else {}
+    query: Dict[str, str | bool] = {"_id": user_id} if user_id else {}
     return list(coll_user.find(query, {}))
 
 

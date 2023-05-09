@@ -3,7 +3,7 @@ from typing import TypedDict, List
 
 class IGraphLink(TypedDict):
     source: str
-    target: List[str]
+    target: str
 
 
 class IGraphData(TypedDict):
