@@ -46,11 +46,15 @@ async def init_heroes(
     :param fields:
     :return:
     """
-    notion = Client(auth=os.environ["NOTION_TOKEN"])
+    notion_token = os.environ["NOTION_TOKEN"]
+    notion_database_id = NOTION_DATABASE_ID
+    print({"notion_token": notion_token, "notion_database_id": notion_database_id})
+
+    notion = Client(auth=notion_token)
 
     # full data
     # ref: https://github.com/ramnes/notion-sdk-py#utility-functions
-    data = collect_paginated_api(notion.databases.query, database_id=NOTION_DATABASE_ID)
+    data = collect_paginated_api(notion.databases.query, database_id=notion_database_id)
 
     def dump_json():
         fp = os.path.join(CACHE_DIR, f'data-{time.time_ns()}.json')
@@ -83,7 +87,7 @@ async def init_heroes(
     description='直接读取 user 表里是notion hero的用户，并筛选有头像的，进行携手链接'
 )
 async def get_graph_data():
-    nodes = list(coll_user.find({"avatar": {"$neq": None}, "is_hero": True}))
+    nodes = list(coll_user.find({"avatar": {"$ne": None}, "is_hero": True}))
     ids = [i['id'] for i in nodes]
     links = [{"source": i['id'], "target": [j for j in i["partners"] if j in ids]} for i in nodes]
     graph_data: IGraphData = {
