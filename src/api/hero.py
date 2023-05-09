@@ -22,14 +22,15 @@ logger = getLogger("API_Hero")
 AVATAR_MAP = {}
 
 
-@hero_router.get('/')
+@hero_router.get('/', summary='heroes 是 users 的子集')
 async def list_heroes(id: str = None):
-    return list(coll_hero_notion.find({"_id": id}, {}))
+    query = {} if not id else {"_id": id}
+    return list(coll_hero_notion.find(query, {}))
 
 
 @hero_router.post(
     "/init_from_notion",
-    description='todo: 该接口要限速',
+    summary='todo: 该接口要限速',
 )
 async def init_heroes(
         bt: BackgroundTasks,

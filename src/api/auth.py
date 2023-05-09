@@ -7,7 +7,7 @@ from datetime import timedelta
 from fastapi import Depends, HTTPException, status, APIRouter, Form
 from fastapi.security import OAuth2PasswordRequestForm
 
-from src.ds.user import UserInDB
+from src.ds.user import UserInDBModel
 from src.libs.auth import get_password_hash, authenticate_user, create_access_token
 from src.libs.db import coll_user
 from src.libs.log import getLogger
@@ -39,27 +39,16 @@ async def register(
     code = gen_random_activation_code()
     my_mail.send_hand_future_activation_mail([email], code, subject, "html")
 
-    user_data = {
-        "_id": username,
-        "username": username,
-        "hashed_password": get_password_hash(password),
-        "nickname": nickname,
-        "email": email,
-        "avatar": avatar,
-        "social": {
-            "following": 0,
-            "followed": 0,
-            "likes": 0
-        },
-        "activated": False,
-        "activation_code": code,
-        "register_time": time.time(),
-
-        "ld_point_balance": 0
-    }
-    # validate user_data
-    UserInDB(**user_data)
-    coll_user.update_one({"username": username}, {"$set": user_data}, upsert=True)
+    user_in_db_model = UserInDBModel(
+        id=username,
+        name=nickname,
+        hashed_password=get_password_hash(password),
+        is_hero=False,
+        avatar=avatar,
+        activation_code=code,
+        activated=False,
+    )
+    coll_user.update_one({"username": username}, {"$set": user_in_db_model.dict(exclude_unset=True)}, upsert=True)
     return True
 
 

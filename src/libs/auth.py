@@ -7,7 +7,8 @@ from jose import jwt, JWTError
 from passlib.context import CryptContext
 from starlette import status
 
-from src.ds.user import TokenData, UserInDB
+from src.ds.auth import TokenData
+from src.ds.user import UserInDBModel
 from src.libs.db import coll_user
 from src.libs.env import ENV_SECRET_KEY, ENV_SECURITY_ALGO
 from src.libs.log import getLogger
@@ -29,10 +30,10 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def get_user(username: str):
+def get_user(username: str) -> UserInDBModel:
     user = coll_user.find_one({"_id": username})
     if user:
-        return UserInDB(**user)
+        return UserInDBModel(**user)
 
 
 def authenticate_user(username: str, password: str):

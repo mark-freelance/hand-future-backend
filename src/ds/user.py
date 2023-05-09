@@ -1,35 +1,19 @@
-from typing import Union, Optional
+from enum import Enum
 
-from pydantic import BaseModel
-
-
-class TokenData(BaseModel):
-    username: str = None
+from src.ds.hero import HeroModel
 
 
-class User(BaseModel):
-    username: str = None
-    email: str = None
-    nickname: str = None
+class RoleType(str, Enum):
+    user = 'user'
+    admin = 'admin'
 
 
-class UserSocial(BaseModel):
-    following: int = 0
-    followed: int = 0
-    likes: int = 0
+class UserModel(HeroModel):
+    role: RoleType = RoleType.user
 
 
-class UserProfile(User):
-    avatar: str = None
-    social: Optional[UserSocial]
-    role: str = None
-
-
-class UserInDB(UserProfile):
+class UserInDBModel(UserModel):
     hashed_password: str
-    activated: bool
-    activation_code: str
-    register_time: float
 
-    # ld_admin project
-    ld_balance: int = 0
+    activated: bool = False
+    activation_code: str

@@ -7,14 +7,11 @@ from pydantic import BaseModel
 
 class HeroModel(BaseModel):
     id: str
-    name: str
+    name: Optional[str]
+    is_hero: Optional[bool] = False
+
+    # hero
     avatar: Optional[str]
     title: Optional[str]
     cities: Optional[str]
-
-    is_hero: bool = False
     partners: Optional[List[str]]
-
-
-class NotionHeroModel(HeroModel):
-    avatar_notion: str
