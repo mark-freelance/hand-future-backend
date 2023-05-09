@@ -16,6 +16,7 @@ def ensure_dir_exist(dir_path: str):
 LOGS_DIR = ensure_dir_exist(os.path.join(PROJECT_DIR, "logs"))
 DATA_DIR = ensure_dir_exist(os.path.join(PROJECT_DIR, "data"))
 UPLOADED_DIR = ensure_dir_exist(os.path.join(DATA_DIR, "uploaded"))
+DOWNLOADED_DIR = ensure_dir_exist(os.path.join(DATA_DIR, "downloaded"))
 UPLOADED_THUMB_DATA_DIR = ensure_dir_exist(os.path.join(DATA_DIR, "uploaded_thumb"))
 AVATAR_DIR = ensure_dir_exist(os.path.join(DATA_DIR, "avatar"))
 CACHE_DIR = ensure_dir_exist(os.path.join(DATA_DIR, "cache"))

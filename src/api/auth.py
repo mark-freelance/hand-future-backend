@@ -3,25 +3,24 @@ ref: https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/
 """
 import time
 from datetime import timedelta
-from typing import Dict
 
-from fastapi import Depends, HTTPException, status, APIRouter, Form, Query, Body
+from fastapi import Depends, HTTPException, status, APIRouter, Form
 from fastapi.security import OAuth2PasswordRequestForm
 
-from src.api.user.utils import get_password_hash, authenticate_user, create_access_token, get_authed_user, get_user
-from src.ds.user import User, UserInDB
-from src.libs.db import db, coll_hero_user, coll_user
+from src.ds.user import UserInDB
+from src.libs.auth import get_password_hash, authenticate_user, create_access_token
+from src.libs.db import coll_user
 from src.libs.log import getLogger
 from src.libs.mail import MyMail
 from src.libs.rand import gen_random_activation_code
 
-user_router = APIRouter(prefix="/user", tags=["user"])
+auth_router = APIRouter(prefix="/auth", tags=["auth"])
 
 my_mail = MyMail()
 logger = getLogger("Auth")
 
 
-@user_router.post('/register')
+@auth_router.post('/register')
 async def register(
         username: str = Form(...),
         password: str = Form(...),
@@ -64,7 +63,7 @@ async def register(
     return True
 
 
-@user_router.post('/activate')
+@auth_router.post('/activate')
 async def activate(username: str = Form(...), code: str = Form(...)):
     user = coll_user.find_one({"username": username, "activated": False})
     # user 被抢先注册！
@@ -89,7 +88,7 @@ async def activate(username: str = Form(...), code: str = Form(...)):
     return True
 
 
-@user_router.post("/token", description='要返回token字段，其他api要用')
+@auth_router.post("/token", description='要返回token字段，其他api要用')
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     user = authenticate_user(form_data.username, form_data.password)
     if not user:
@@ -104,71 +103,3 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     )
     logger.info({"access_token": access_token})
     return {"access_token": access_token, "token_type": "bearer"}
-
-
-@user_router.get("/me")
-async def read_user(user=Depends(get_authed_user)):
-    """
-    todo: add more restriction on return (what about dynamic data structure ? should we separate tables ?)
-
-    :param user:
-    :return:
-    """
-    return user
-
-
-@user_router.get("/detail")
-async def read_user(coll_name: str, user=Depends(get_authed_user)):
-    """
-    todo: add more restriction on return (what about dynamic data structure ? should we separate tables ?)
-
-    :param coll_name:
-    :param user:
-    :return:
-    """
-    return db[coll_name].find_one({"_id": user.username})
-
-
-@user_router.patch('/update')
-async def update_user(coll_name: str = Query('user'), data: dict = Body(...), user: User = Depends(get_authed_user)):
-    """
-    partial update, ref: https://fastapi.tiangolo.com/tutorial/body-updates/
-
-    理论上不可修改 username、password、email，其他的可以更改
-
-    ~~cancelled: do more restriction~~
-
-    升级：允许对任意子表进行修改（例如 SYS，基于另一个项目），这样就不方面做很多限制了
-
-    :param coll_name: 更新一些其他表的信息
-
-    :param data: ref: https://stackoverflow.com/a/65114346/9422455
-
-    :param user:
-
-    :return:
-    """
-    logger.info({"/user/update": {"coll_name": coll_name, "data": data}})
-    data = db[coll_name].find_one_and_update(
-        {"_id": user.username},
-        {"$set": data},
-        upsert=True,
-        return_document=True
-    )
-    return data
-
-
-@user_router.put('/set_role')
-def set_role(username: str, role: str):
-    user = get_user(username)
-    if not user:
-        raise HTTPException(status_code=404)
-    return coll_user.find_one_and_update({"_id": username}, {"$set": {"role": role}}, return_document=True)
-
-
-@user_router.get("/")
-def get_single(id: str) -> Dict:
-    data = coll_hero_user.find_one({"_id": id})
-    if not data:
-        raise HTTPException(status_code=404, detail='id not exists')
-    return data
