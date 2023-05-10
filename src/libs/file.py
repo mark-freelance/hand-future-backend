@@ -28,14 +28,14 @@ def get_server_image_path(file_id: str) -> str:
 
 
 def write_image(file_id, filedata) -> str:
+    logger.info(f'writing image(id={file_id})')
+    
     # dump raw
-    logger.info(f'writing raw image of id={file_id}')
     raw_img_path = os.path.join(UPLOADED_DIR, file_id)
     with open(raw_img_path, "wb") as f:
         f.write(filedata)
 
     # dump thumb
-    logger.info(f'writing thumb image of id={file_id}')
     img = Image.open(raw_img_path)
     w, h = img.size
     MAX_W = 360

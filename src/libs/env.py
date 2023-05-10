@@ -4,12 +4,18 @@ import dotenv
 
 dotenv.load_dotenv()
 
-ENV_SECRET_KEY = os.environ['SECRET_KEY']
-ENV_SECURITY_ALGO = os.environ['SECURITY_ALGO']
-ENV_MONGO_URI = os.environ['MONGO_URI']
+SECRET_KEY = os.environ['SECRET_KEY']
+SECURITY_ALGO = os.environ['SECURITY_ALGO']
 
-ENV_MAIL_SENDER_ADDRESS = os.environ['MAIL_SENDER_ADDRESS']
-ENV_MAIL_SENDER_NAME = os.environ['MAIL_SENDER_NAME']
-ENV_MAIL_APP_PASSWORD = os.environ['MAIL_APP_PASSWORD']
-ENV_MAIL_SMTP_SERVER = os.environ['MAIL_SMTP_SERVER']
-ENV_MAIL_SMTP_PORT = os.environ['MAIL_SMTP_PORT']
+DATABASE_MONGO_URI = os.environ['MONGO_URI']
+DATABASE_DB_NAME = os.environ['DATABASE_DB_NAME']
+
+SMTP_USER = os.environ['SMTP_USER']
+SMTP_SENDER = os.environ['SMTP_SENDER']
+SMTP_SENDER_NAME = os.environ['SMTP_SENDER_NAME']
+SMTP_PSWD = os.environ['SMTP_PSWD']
+SMTP_HOST = os.environ['SMTP_HOST']
+SMTP_PORT = int(os.environ['SMTP_PORT'])
+
+NOTION_TOKEN = os.environ["NOTION_TOKEN"]
+NOTION_DATABASE_ID = os.environ['NOTION_DATABASE_ID']

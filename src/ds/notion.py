@@ -117,14 +117,14 @@ class NotionModel(BaseModel):
     def to_hero_model(self, bt: BackgroundTasks = None) -> HeroModel:
         avatar = self.first_photo
         if avatar:
-            image_id = get_server_image_path(f"{self.id}.png")
+            image_id = f"{self.id}.png"
             # local persistence in case of CORS Error, and speed up image loading
             if bt:
                 bt.add_task(write_image, image_id, requests.get(avatar).content)
             else:
                 # write_image(image_id, requests.get(avatar).content)
                 pass
-            avatar = image_id
+            avatar = get_server_image_path(image_id)
 
         return HeroModel(
             id=self.id,

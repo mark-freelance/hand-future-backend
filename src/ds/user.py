@@ -15,5 +15,6 @@ class UserModel(HeroModel):
 class UserInDBModel(UserModel):
     hashed_password: str
 
+    register_time: int
     activated: bool = False
     activation_code: str

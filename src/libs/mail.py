@@ -1,10 +1,12 @@
 import os.path
 import smtplib
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.utils import formataddr
 from typing import List
 
-from src.libs.env import ENV_MAIL_SENDER_ADDRESS, ENV_MAIL_SENDER_NAME, ENV_MAIL_APP_PASSWORD, ENV_MAIL_SMTP_SERVER, \
-    ENV_MAIL_SMTP_PORT
+from src.libs.env import SMTP_SENDER, SMTP_SENDER_NAME, SMTP_PSWD, SMTP_HOST, \
+    SMTP_PORT, SMTP_USER
 from src.libs.log import getLogger
 from src.libs.path import CONFIG_DIR
 
@@ -17,29 +19,29 @@ class MyMail:
     """
 
     def __init__(self):
-        self._username = ENV_MAIL_SENDER_ADDRESS
-        self._sender_name = ENV_MAIL_SENDER_NAME
-        self._password = ENV_MAIL_APP_PASSWORD
-        self._smtp_server = ENV_MAIL_SMTP_SERVER
-        self._smtp_port = ENV_MAIL_SMTP_PORT
+        self._smtp_user = SMTP_USER
+        self._smtp_sender = SMTP_SENDER
+        self._smtp_sender_name = SMTP_SENDER_NAME
+        self._smtp_pswd = SMTP_PSWD
+        self._smtp_host = SMTP_HOST
+        self._smtp_port = SMTP_PORT
+        # logger.info({
+        #     "sender": self._smtp_sender, "sender_name": self._smtp_sender_name, "host": self._smtp_host,
+        #     "port": self._smtp_port, "pswd": self._smtp_pswd
+        # })
 
-    def _send_html_mail(self, subject, content, recipients, kind: str):
-        sender = self._sender_name  # 会在收到邮件时显示名字（因此可以不必用地址）
-        logger.info(f'sending from {sender} to {recipients}, kind={kind}')
-        msg = MIMEText(content, kind)
-        msg['Subject'] = subject
-        msg['From'] = sender
-        msg['To'] = recipients if isinstance(recipients, str) else ', '.join(recipients)
+    def _send_html_mail(self, subject, content, recipients: List[str], kind: str):
+        with smtplib.SMTP_SSL(self._smtp_host, self._smtp_port) as server:
+            server.login(self._smtp_user, self._smtp_pswd)
 
-        logger.info(f"connecting SMTP server at: {self._smtp_server}:{self._smtp_port}...")
-        server = smtplib.SMTP_SSL(self._smtp_server, self._smtp_port)
-        logger.info("login...")
-        server.login(self._username, self._password)
-        # from_addr 只能用ascii字符
-        # UnicodeEncodeError: 'ascii' codec can't encode characters in position 11-12: ordinal not in range(128)
-        server.sendmail(self._username, recipients, msg.as_string())
-        logger.info("successfully sent mail!")
-        server.close()
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = subject
+            msg['From'] = formataddr((self._smtp_sender_name, self._smtp_sender))
+            msg['To'] = ";".join(recipients)
+            # msg.attach(MIMEText(content, 'text'))
+            msg.attach(MIMEText(content, 'html'))
+            server.sendmail(self._smtp_sender, recipients, msg.as_string())
+            server.close()
 
     def send_hand_future_activation_mail(self, recipients: List[str], activation_code: str, subject: str = None,
                                          kind: str = "html"):
@@ -50,7 +52,7 @@ class MyMail:
         else:
             content = activation_code
         logger.info(f'sending content: {content}')
-        self._send_html_mail(f"【{subject or '携手未来'}】Activation Code", content, recipients, kind)
+        self._send_html_mail(f"【{subject or '携手未来'}】验证码: {activation_code}", content, recipients, kind)
 
 
 if __name__ == '__main__':

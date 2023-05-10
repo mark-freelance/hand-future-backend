@@ -10,10 +10,10 @@ from starlette import status
 from src.ds.auth import TokenData
 from src.ds.user import UserInDBModel
 from src.libs.db import coll_user
-from src.libs.env import ENV_SECRET_KEY, ENV_SECURITY_ALGO
+from src.libs.env import SECRET_KEY, SECURITY_ALGO
 from src.libs.log import getLogger
 
-logger = getLogger("Auth")
+logger = getLogger("auth-utils")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -53,7 +53,7 @@ async def get_authed_user(token: str = Depends(oauth2_scheme)):
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, ENV_SECRET_KEY, algorithms=[ENV_SECURITY_ALGO])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[SECURITY_ALGO])
         username: str = payload.get("sub")
         if username is None:
             logger.warning(f'[401] username in payload is None')
@@ -76,5 +76,5 @@ def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, ENV_SECRET_KEY, algorithm=ENV_SECURITY_ALGO)
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=SECURITY_ALGO)
     return encoded_jwt

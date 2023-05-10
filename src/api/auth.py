@@ -47,14 +47,14 @@ async def register(
         avatar=avatar,
         activation_code=code,
         activated=False,
+        register_time=int(time.time()),
     )
-    coll_user.update_one({"username": username}, {"$set": user_in_db_model.dict(exclude_unset=True)}, upsert=True)
-    return True
+    coll_user.update_one({"_id": username}, {"$set": user_in_db_model.dict(exclude_unset=True)}, upsert=True)
 
 
 @auth_router.post('/activate')
 async def activate(username: str = Form(...), code: str = Form(...)):
-    user = coll_user.find_one({"username": username, "activated": False})
+    user = coll_user.find_one({"_id": username, "activated": False})
     # user 被抢先注册！
     if not user:
         raise HTTPException(
@@ -67,7 +67,7 @@ async def activate(username: str = Form(...), code: str = Form(...)):
             detail="Invalid / Incorrect Activation Code !"
         )
     coll_user.update_one(
-        {"_id": user["username"]},
+        {"_id": user["id"]},
         {"$set": {
             "activated": True,
             "activation_time": time.time()
@@ -88,7 +88,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         )
     access_token_expires = timedelta(days=7)
     access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
+        data={"sub": user.id}, expires_delta=access_token_expires
     )
     logger.info({"access_token": access_token})
     return {"access_token": access_token, "token_type": "bearer"}

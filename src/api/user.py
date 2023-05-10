@@ -11,22 +11,15 @@ user_router = APIRouter(prefix='/user', tags=['user'])
 logger = getLogger('user-router')
 
 
-@user_router.get("/", response_model=List[UserModel])
-async def list_users():
+@user_router.get("/", response_model=List[UserModel] | UserModel | None)
+async def list_users(user_id: str = None):
     """
     todo: add more restriction on return (what about dynamic data structure ? should we separate tables ?)
 
     """
+    if user_id:
+        return coll_user.find_one({"_id": user_id})
     return list(coll_user.find())
-
-
-@user_router.get("/{user_id}", response_model=UserModel | None)
-async def get_user(user_id: str):
-    """
-    todo: add more restriction on return (what about dynamic data structure ? should we separate tables ?)
-
-    """
-    return coll_user.find_one({"_id": user_id})
 
 
 @user_router.patch(
