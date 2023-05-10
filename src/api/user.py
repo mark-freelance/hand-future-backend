@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List
 
 from fastapi import APIRouter
 
@@ -12,13 +12,21 @@ logger = getLogger('user-router')
 
 
 @user_router.get("/", response_model=List[UserModel])
-async def list_users(user_id: str = None):
+async def list_users():
     """
     todo: add more restriction on return (what about dynamic data structure ? should we separate tables ?)
 
     """
-    query: Dict[str, str | bool] = {"_id": user_id} if user_id else {}
-    return list(coll_user.find(query, {}))
+    return list(coll_user.find())
+
+
+@user_router.get("/{user_id}", response_model=UserModel | None)
+async def get_user(user_id: str):
+    """
+    todo: add more restriction on return (what about dynamic data structure ? should we separate tables ?)
+
+    """
+    return coll_user.find_one({"_id": user_id})
 
 
 @user_router.patch(
