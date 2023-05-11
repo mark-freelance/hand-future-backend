@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Optional
 
 from src.ds.hero import HeroModel
 
@@ -9,7 +10,7 @@ class RoleType(str, Enum):
 
 
 class UserModel(HeroModel):
-    role: RoleType = RoleType.user
+    role: Optional[RoleType] = RoleType.user
 
 
 class UserInDBModel(UserModel):

@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 
 class HeroModel(BaseModel):
-    id: str
+    email: str
     name: Optional[str]
     is_hero: Optional[bool] = False
 

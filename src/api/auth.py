@@ -40,7 +40,7 @@ async def register(
     my_mail.send_hand_future_activation_mail([email], code, subject, "html")
 
     user_in_db_model = UserInDBModel(
-        id=username,
+        email=username,
         name=nickname,
         hashed_password=get_password_hash(password),
         is_hero=False,
@@ -88,7 +88,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         )
     access_token_expires = timedelta(days=7)
     access_token = create_access_token(
-        data={"sub": user.id}, expires_delta=access_token_expires
+        data={"sub": user.email}, expires_delta=access_token_expires
     )
     logger.info({"access_token": access_token})
     return {"access_token": access_token, "token_type": "bearer"}

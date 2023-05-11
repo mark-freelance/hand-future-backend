@@ -127,7 +127,7 @@ class NotionModel(BaseModel):
             avatar = get_server_image_path(image_id)
 
         return HeroModel(
-            id=self.id,
+            email=self.id,
             is_hero=True,
             name=self.name,
             avatar=avatar,

@@ -10,6 +10,8 @@ user_router = APIRouter(prefix='/user', tags=['user'])
 
 logger = getLogger('user-router')
 
+KEY_USER_ID = 'email'  # 受限于 next-auth + EmailProvider + mongodb-adapter
+
 
 @user_router.get("/", response_model=List[UserModel] | UserModel | None)
 async def list_users(user_id: str = None):
@@ -18,7 +20,7 @@ async def list_users(user_id: str = None):
 
     """
     if user_id:
-        return coll_user.find_one({"_id": user_id})
+        return coll_user.find_one({KEY_USER_ID: user_id})
     return list(coll_user.find())
 
 
@@ -36,7 +38,7 @@ partial update, ref: https://fastapi.tiangolo.com/tutorial/body-updates/
 )
 async def update_user(data: UserModel):
     data = coll_user.find_one_and_update(
-        {"_id": data.id},
+        {KEY_USER_ID: data.email},
         {"$set": data.dict(exclude_unset=True, exclude_defaults=True)},
         upsert=True,
         return_document=True
