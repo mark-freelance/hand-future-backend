@@ -23,7 +23,7 @@ app = FastAPI(
             allow_methods=["*"],
             allow_headers=["*"],
         )
-    ]
+    ],
 )
 
 app.include_router(root_router)
