@@ -9,7 +9,7 @@ from notion_client.helpers import collect_paginated_api
 from pymongo import UpdateOne
 from starlette.background import BackgroundTasks
 
-from src.ds.graph import IGraphData
+from src.ds.graph import GraphData
 from src.ds.notion import NotionModel
 from src.ds.user import HeroModel
 from src.libs.db import coll_hero_notion, coll_user
@@ -80,15 +80,17 @@ async def init_heroes(
 
 @hero_router.get(
     '/graph_data',
-    description='直接读取 user 表里是notion hero的用户，并筛选有头像的，进行携手链接'
+    description='直接读取 user 表里是notion hero的用户，并筛选有头像的，进行携手链接',
+    response_model=GraphData,
+    response_model_by_alias=False,
 )
 async def get_graph_data():
     nodes = list(coll_user.find({"avatar": {"$ne": None}, "is_hero": True}))
-    ids = [i['id'] for i in nodes]
+    ids = [i['_id'] for i in nodes]
     links = []
     seen = set()  # 要去重
     for node in nodes:
-        source = node['id']
+        source = node['_id']
         if source in ids:
             for link in node['partners']:
                 if link in ids:
@@ -98,6 +100,4 @@ async def get_graph_data():
                         seen.add(cur)
                         links.append({"source": source, "target": target})
 
-    graph_data: IGraphData = {"nodes": nodes, "links": links}
-    # print(graph_data)
-    return graph_data
+    return {"nodes": nodes, "links": links}

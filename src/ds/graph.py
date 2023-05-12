@@ -1,11 +1,17 @@
-from typing import TypedDict, List
+from __future__ import annotations
+
+from typing import List
+
+from pydantic import BaseModel
+
+from src.ds.user import HeroModel
 
 
-class IGraphLink(TypedDict):
+class LinkModel(BaseModel):
     source: str
     target: str
 
 
-class IGraphData(TypedDict):
-    nodes: List[dict]
-    links: List[IGraphLink]
+class GraphData(BaseModel):
+    nodes: List[HeroModel]
+    links: List[LinkModel]
