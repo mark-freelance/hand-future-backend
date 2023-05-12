@@ -3,6 +3,10 @@ origins = [
     "http://localhost",
     "http://localhost:3000",
 
+    "http://43.143.208.237",
+    "http://43.143.208.237:3000",
+    "http://43.143.208.237:3002",
+
     "http://gkleifeng.com",
     "http://gkleifeng.com:3000",
     "https://gkleifeng.com",
