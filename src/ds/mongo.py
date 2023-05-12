@@ -24,6 +24,9 @@ class PyObjectId(ObjectId):
         field_schema.update(type="string")
 
 
+ID = PyObjectId | str
+
+
 class MongoModel(BaseModel):
     id: PyObjectId | str = Field(default_factory=PyObjectId, alias='_id')
 

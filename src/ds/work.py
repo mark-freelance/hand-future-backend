@@ -3,7 +3,7 @@ from typing import List
 
 from pydantic import BaseModel
 
-from src.ds.mongo import MongoModel, PyObjectId
+from src.ds.mongo import MongoModel, ID
 
 
 class WorkType(str, Enum):
@@ -33,7 +33,7 @@ class WorkSourceModel(BaseModel):
 
 
 class WorkModel(MongoModel):
-    user_id: PyObjectId
+    user_id: ID
     layout: TypographyLayoutType
     title: str
     cover: str

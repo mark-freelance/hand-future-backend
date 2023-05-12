@@ -1,6 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
-from src.ds.mongo import PyObjectId
+from src.ds.mongo import ID
 from src.ds.user import UserModel
 from src.libs.db import coll_user
 from src.libs.log import getLogger
@@ -15,11 +15,13 @@ logger = getLogger('user-router')
     response_model=UserModel | None,
     response_model_by_alias=False,  # ref:https://stackoverflow.com/a/69679104/9422455
 )
-async def get_user(id: PyObjectId = None, email: str = None):
+async def get_user(id: ID = None, email: str = None):
     """
     todo: add more restriction on return (what about dynamic data structure ? should we separate tables ?)
 
     """
+    if not id and not email:
+        raise HTTPException(406, detail='id 和 email 至少要有一个作为筛选条件')
     query = {}
     if id:
         query['_id'] = id
