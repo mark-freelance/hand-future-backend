@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional, List
-
 from bson import ObjectId
 from pydantic import BaseModel, Field
 
@@ -26,16 +24,8 @@ class PyObjectId(ObjectId):
         field_schema.update(type="string")
 
 
-class HeroModel(BaseModel):
+class MongoModel(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias='_id')
-    name: Optional[str]
-    is_hero: Optional[bool] = False
-
-    # hero
-    avatar: Optional[str]
-    title: Optional[str]
-    cities: Optional[str]
-    partners: Optional[List[str]]
 
     class Config:
         allow_population_by_field_name = True

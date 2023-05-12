@@ -5,7 +5,7 @@ from src.api.files import files_router
 from src.api.hero import hero_router
 from src.api.user import user_router
 from src.api.wechat import wechat_router
-from src.api.works import works_router
+from src.api.work import works_router
 
 root_router = APIRouter()
 

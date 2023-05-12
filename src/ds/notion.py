@@ -6,7 +6,7 @@ import requests
 from pydantic import BaseModel, Field
 from starlette.background import BackgroundTasks
 
-from src.ds.hero import HeroModel
+from src.ds.user import HeroModel
 from src.libs.file import write_image, get_server_image_path
 
 

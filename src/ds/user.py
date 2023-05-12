@@ -1,12 +1,26 @@
-from enum import Enum
-from typing import Optional
+from __future__ import annotations
 
-from src.ds.hero import HeroModel
+from enum import Enum
+from typing import Optional, List
+
+from src.ds.mongo import MongoModel
 
 
 class RoleType(str, Enum):
     user = 'user'
     admin = 'admin'
+
+
+class HeroModel(MongoModel):
+    name: Optional[str]
+    is_hero: Optional[bool] = False
+
+    # hero
+    avatar: Optional[str]
+    cover: Optional[str]
+    title: Optional[str]
+    cities: Optional[str]
+    partners: Optional[List[str]]
 
 
 class UserModel(HeroModel):

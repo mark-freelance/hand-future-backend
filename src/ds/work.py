@@ -3,6 +3,8 @@ from typing import List
 
 from pydantic import BaseModel
 
+from src.ds.mongo import MongoModel, PyObjectId
+
 
 class WorkType(str, Enum):
     image = "image"
@@ -12,31 +14,30 @@ class WorkType(str, Enum):
     others = "others"
 
 
-class TypographyLayout(str, Enum):
+class TypographyLayoutType(str, Enum):
     typography_plain = 'typography_plain',
     typography_horizontal_bg = 'typography_horizontal_bg',
     typography_horizontal = 'typography_horizontal',
     typography_vertical = 'typography_vertical',
 
 
-class SourcePlatform(str, Enum):
+class SourcePlatformType(str, Enum):
     plain = 'plain',
     bilibiliVideo = 'bilibiliVideo',
     wechatArticle = 'wechatArticle',
 
 
-class WorkSource(BaseModel):
-    platform: SourcePlatform
+class WorkSourceModel(BaseModel):
+    platform: SourcePlatformType
     url: str = None
 
 
-class IWork(BaseModel):
-    id: str
-    user_id: str
-    layout: TypographyLayout
+class WorkModel(MongoModel):
+    user_id: PyObjectId
+    layout: TypographyLayoutType
     title: str
     cover: str
     description: str
     content: str
     connections: List[str]
-    source: WorkSource
+    source: WorkSourceModel
