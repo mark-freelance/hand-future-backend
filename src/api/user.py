@@ -53,3 +53,30 @@ async def update_user(data: UserModel):
     )
     print("updated_user: ", data)
     return data
+
+
+@user_router.patch(
+    '/update_via_email',
+    response_model=UserModel,
+    response_model_by_alias=False,
+    description="""
+partial update, ref: https://fastapi.tiangolo.com/tutorial/body-updates/
+
+理论上不可修改 username、password、email，其他的可以更改
+
+~~cancelled: do more restriction~~
+
+升级：允许对任意子表进行修改（例如 SYS，基于另一个项目），这样就不方面做很多限制了
+    """
+)
+async def update_user_via_email(data: UserModel):
+    data = coll_user.find_one_and_update(
+        {"email": data.email},
+        {"$set": data.dict(exclude_unset=True, exclude_defaults=True)},
+        upsert=False,
+        return_document=True
+    )
+    print("updated_user: ", data)
+    if not data:
+        raise HTTPException(406, detail='用户不存在！')
+    return data
