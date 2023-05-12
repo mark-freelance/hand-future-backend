@@ -28,6 +28,7 @@ AVATAR_MAP = {}
     '/',
     summary='heroes 是 users 的子集',
     response_model=List[HeroModel],
+    response_model_by_alias=False,
 )
 async def list_heroes():
     return list(coll_user.find({"is_hero": True}))
