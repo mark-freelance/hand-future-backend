@@ -1,7 +1,6 @@
 import json
 import os
 import time
-from typing import List
 
 from fastapi import APIRouter, Query
 from notion_client import Client
@@ -10,7 +9,6 @@ from pymongo import UpdateOne
 from starlette.background import BackgroundTasks
 
 from src.ds.graph import IGraphData
-from src.ds.hero import HeroModel
 from src.ds.notion import NotionModel
 from src.libs.db import coll_hero_notion, coll_user
 from src.libs.env import NOTION_DATABASE_ID, NOTION_TOKEN
@@ -24,9 +22,11 @@ logger = getLogger("hero-api")
 AVATAR_MAP = {}
 
 
-@hero_router.get('/', summary='heroes 是 users 的子集', response_model=List[HeroModel])
+@hero_router.get('/', summary='heroes 是 users 的子集',
+                 # response_model=List[HeroModel],
+                 )
 async def list_heroes():
-    return list(coll_user.find({"is_hero": True}, {}))
+    return list(coll_user.find({"is_hero": True}))
 
 
 @hero_router.post(

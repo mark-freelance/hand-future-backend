@@ -1,7 +1,6 @@
-from typing import List
-
 from fastapi import APIRouter
 
+from src.ds.hero import PyObjectId
 from src.ds.user import UserModel
 from src.libs.db import coll_user
 from src.libs.log import getLogger
@@ -13,15 +12,18 @@ logger = getLogger('user-router')
 KEY_USER_ID = 'email'  # 受限于 next-auth + EmailProvider + mongodb-adapter
 
 
-@user_router.get("/", response_model=List[UserModel] | UserModel | None)
-async def list_users(user_id: str = None):
+@user_router.get("/", response_model=UserModel | None)
+async def get_user(id: PyObjectId = None, email: str = None):
     """
     todo: add more restriction on return (what about dynamic data structure ? should we separate tables ?)
 
     """
-    if user_id:
-        return coll_user.find_one({KEY_USER_ID: user_id})
-    return list(coll_user.find())
+    query = {}
+    if id:
+        query['_id'] = id
+    if email:
+        query["email"] = email
+    return coll_user.find_one(query)
 
 
 @user_router.patch(

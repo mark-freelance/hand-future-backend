@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from src.ds.hero import PyObjectId
 from src.ds.work import IWork
 from src.libs.db import coll_work
 
@@ -7,7 +8,7 @@ works_router = APIRouter(prefix="/works", tags=["works"])
 
 
 @works_router.get('/')
-async def get_collection_of_works(user_id: str):
+async def get_collection_of_works(user_id: PyObjectId):
     return list(coll_work.find({"user_id": user_id}))
 
 
@@ -24,5 +25,5 @@ async def update_work(work: IWork):
 
 
 @works_router.delete('/')
-async def delete_work(id: str):
+async def delete_work(id: PyObjectId):
     return coll_work.delete_one({"_id": id}).raw_result

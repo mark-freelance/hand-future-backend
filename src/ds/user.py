@@ -10,6 +10,7 @@ class RoleType(str, Enum):
 
 
 class UserModel(HeroModel):
+    email: Optional[str]
     role: Optional[RoleType] = RoleType.user
 
 
