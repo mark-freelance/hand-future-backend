@@ -12,4 +12,6 @@ origins = [
     "https://gkleifeng.com",
     "https://gkleifeng.com:3000",
 
+    "http://cs-magic.cn:3000",
+    "https://cs-magic.cn",
 ]
