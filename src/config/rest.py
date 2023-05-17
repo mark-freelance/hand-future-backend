@@ -14,4 +14,5 @@ origins = [
 
     "http://cs-magic.cn:3000",
     "https://cs-magic.cn",
+    "https://xieshou.cs-magic.cn",
 ]
