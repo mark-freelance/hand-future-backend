@@ -59,6 +59,9 @@ async def init_heroes(
     def dump_db():
         coll_hero_notion_tasks = []
         coll_user_tasks = []
+        total = len(data)
+        logger.info(f"开始处理 {total} 条英雄数据...")
+        
         for seq, item in enumerate(data):
             # pprint(item)
             id = item['id']
@@ -67,9 +70,15 @@ async def init_heroes(
             hero_model = NotionModel.parse_obj(item).to_hero_model(bt)
             coll_user_tasks.append(
                 UpdateOne({"_id": id}, {"$set": dict(**hero_model.dict(exclude_unset=True), _id=id)}, upsert=True))
+            
+            if (seq + 1) % 10 == 0 or seq + 1 == total:  # 每处理10条数据记录一次进度
+                logger.info(f"处理进度: {seq + 1}/{total} ({((seq + 1)/total*100):.1f}%)")
+        
+        logger.info("开始批量写入数据库...")
         result_hero_notion = coll_hero_notion.bulk_write(coll_hero_notion_tasks).bulk_api_result
         result_user = coll_user.bulk_write(coll_user_tasks).bulk_api_result
         logger.info({"result": {'hero_notion': result_hero_notion, 'user': result_user}})
+        logger.info("数据库写入完成")
 
     if use_dump_json: dump_json()
 

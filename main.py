@@ -1,4 +1,6 @@
 import dotenv
+import uvicorn
+from pydantic.errors import PyObjectError
 
 from src.api.root import root_router
 from src.config.rest import origins
@@ -24,6 +26,13 @@ app = FastAPI(
             allow_headers=["*"],
         )
     ],
+
 )
 
 app.include_router(root_router)
+
+PORT = 41118
+app.port = PORT
+
+if __name__ == '__main__':
+    uvicorn.run(app, host="0.0.0.0", port=PORT)

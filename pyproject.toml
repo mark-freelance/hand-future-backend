@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "hand-future-backend"
+name = "xieshou-backend"
 version = "0.1.0"
 description = ""
 authors = ["markshawn2020 <shawninjuly@gmail.com>"]
